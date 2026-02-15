@@ -1,0 +1,119 @@
+fecha,concepto,monto,categoria
+2026-01-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-01-01,Alquiler Piso,-850.00,Vivienda
+2026-01-02,Compra Mercadona,-78.43,Alimentación
+2026-01-03,Suscripción Netflix,-17.99,Ocio
+2026-01-05,Factura Luz,-115.20,Vivienda
+2026-01-05,Internet Fibra,-39.90,Vivienda
+2026-01-07,Cena con Amigos,-32.50,Ocio
+2026-01-10,Gasolina,-55.00,Transporte
+2026-01-12,Compra Mercadona,-92.10,Alimentación
+2026-01-15,Farmacia,-15.40,Salud
+2026-01-18,Cine y Palomitas,-25.00,Ocio
+2026-01-20,Gasolina,-62.00,Transporte
+2026-01-22,Compra Mercadona,-45.30,Alimentación
+2026-01-25,Restaurante Fin de Semana,-65.00,Ocio
+2026-01-28,Gimnasio,-45.00,Salud
+2026-02-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-02-01,Alquiler Piso,-850.00,Vivienda
+2026-02-03,Suscripción Netflix,-17.99,Ocio
+2026-02-05,Factura Luz,-130.15,Vivienda
+2026-02-05,Internet Fibra,-39.90,Vivienda
+2026-02-08,Compra Mercadona,-88.40,Alimentación
+2026-02-12,Gasolina,-58.20,Transporte
+2026-02-14,Cena San Valentín,-90.00,Ocio
+2026-02-18,Compra Mercadona,-72.15,Alimentación
+2026-02-22,Entradas Concierto,-120.00,Ocio
+2026-02-25,Gasolina,-45.00,Transporte
+2026-03-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-03-01,Alquiler Piso,-850.00,Vivienda
+2026-03-03,Suscripción Netflix,-17.99,Ocio
+2026-03-05,Factura Luz,-102.40,Vivienda
+2026-03-05,Internet Fibra,-39.90,Vivienda
+2026-03-08,Compra Mercadona,-65.30,Alimentación
+2026-03-12,Reparación Coche,-240.00,Transporte
+2026-03-15,Gasolina,-60.00,Transporte
+2026-03-20,Compra Mercadona,-110.20,Alimentación
+2026-03-25,Cena con Amigos,-40.00,Ocio
+2026-04-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-04-01,Alquiler Piso,-850.00,Vivienda
+2026-04-03,Suscripción Netflix,-17.99,Ocio
+2026-04-05,Factura Luz,-95.00,Vivienda
+2026-04-05,Internet Fibra,-39.90,Vivienda
+2026-04-10,Compra Mercadona,-85.00,Alimentación
+2026-04-15,Gasolina,-55.00,Transporte
+2026-04-20,Regalo Cumpleaños,-50.00,Otros
+2026-04-25,Compra Mercadona,-70.00,Alimentación
+2026-05-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-05-01,Alquiler Piso,-850.00,Vivienda
+2026-05-03,Suscripción Netflix,-17.99,Ocio
+2026-05-05,Factura Luz,-88.50,Vivienda
+2026-05-05,Internet Fibra,-39.90,Vivienda
+2026-05-10,Viaje Fin de Semana,-200.00,Ocio
+2026-05-15,Gasolina,-60.00,Transporte
+2026-05-20,Compra Mercadona,-95.40,Alimentación
+2026-05-25,Cena Terraza,-55.00,Ocio
+2026-06-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-06-01,Alquiler Piso,-850.00,Vivienda
+2026-06-03,Suscripción Netflix,-17.99,Ocio
+2026-06-05,Factura Luz,-110.00,Vivienda
+2026-06-05,Internet Fibra,-39.90,Vivienda
+2026-06-10,Compra Mercadona,-82.00,Alimentación
+2026-06-15,Gasolina,-58.00,Transporte
+2026-06-20,Aire Acondicionado Mantenimiento,-120.00,Vivienda
+2026-06-25,Heladería,-15.00,Ocio
+2026-07-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-07-01,Alquiler Piso,-850.00,Vivienda
+2026-07-03,Suscripción Netflix,-17.99,Ocio
+2026-07-05,Factura Luz,-145.00,Vivienda
+2026-07-05,Internet Fibra,-39.90,Vivienda
+2026-07-10,Vacaciones Hotel,-600.00,Ocio
+2026-07-15,Gasolina,-65.00,Transporte
+2026-07-20,Compra Mercadona,-105.00,Alimentación
+2026-07-25,Cenas Verano,-80.00,Ocio
+2026-08-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-08-01,Alquiler Piso,-850.00,Vivienda
+2026-08-03,Suscripción Netflix,-17.99,Ocio
+2026-08-05,Factura Luz,-155.00,Vivienda
+2026-08-05,Internet Fibra,-39.90,Vivienda
+2026-08-10,Gasolina,-60.00,Transporte
+2026-08-15,Compra Mercadona,-75.00,Alimentación
+2026-08-20,Peajes Viaje,-30.00,Transporte
+2026-08-25,Restaurante Playa,-70.00,Ocio
+2026-09-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-09-01,Alquiler Piso,-850.00,Vivienda
+2026-09-03,Suscripción Netflix,-17.99,Ocio
+2026-09-05,Factura Luz,-105.00,Vivienda
+2026-09-05,Internet Fibra,-39.90,Vivienda
+2026-09-10,Material Escolar / Cursos,-150.00,Educación
+2026-09-15,Gasolina,-55.00,Transporte
+2026-09-20,Compra Mercadona,-90.00,Alimentación
+2026-09-25,Cena con Amigos,-45.00,Ocio
+2026-10-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-10-01,Alquiler Piso,-850.00,Vivienda
+2026-10-03,Suscripción Netflix,-17.99,Ocio
+2026-10-05,Factura Luz,-92.00,Vivienda
+2026-10-05,Internet Fibra,-39.90,Vivienda
+2026-10-10,Compra Mercadona,-88.00,Alimentación
+2026-10-15,Gasolina,-58.00,Transporte
+2026-10-20,Ropa Invierno,-120.00,Ocio
+2026-10-25,Compra Mercadona,-70.00,Alimentación
+2026-11-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-11-01,Alquiler Piso,-850.00,Vivienda
+2026-11-03,Suscripción Netflix,-17.99,Ocio
+2026-11-05,Factura Luz,-115.00,Vivienda
+2026-11-05,Internet Fibra,-39.90,Vivienda
+2026-11-10,Gasolina,-60.00,Transporte
+2026-11-15,Compra Mercadona,-100.00,Alimentación
+2026-11-20,Cine y Cena,-50.00,Ocio
+2026-11-25,Black Friday Tech,-300.00,Ocio
+2026-12-01,Nómina SAFA Tech,2500.00,Ingresos
+2026-12-01,Alquiler Piso,-850.00,Vivienda
+2026-12-03,Suscripción Netflix,-17.99,Ocio
+2026-12-05,Factura Luz,-140.00,Vivienda
+2026-12-05,Internet Fibra,-39.90,Vivienda
+2026-12-10,Regalos Navidad,-250.00,Otros
+2026-12-15,Gasolina,-55.00,Transporte
+2026-12-20,Compra Mercadona,-150.00,Alimentación
+2026-12-24,Cena Nochebuena,-100.00,Ocio
+2026-12-31,Fiesta Fin de Año,-80.00,Ocio
