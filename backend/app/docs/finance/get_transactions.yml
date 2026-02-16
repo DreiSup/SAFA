@@ -1,0 +1,42 @@
+tags:
+  - Microeconomía
+summary: Listar todas las transacciones
+description: Recupera el historial completo de movimientos financieros ordenados por fecha descendente.
+responses:
+  200:
+    description: Lista de transacciones recuperada con éxito
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: ID único de la transacción
+            example: 1
+          fecha:
+            type: string
+            format: date
+            description: Fecha del movimiento (YYYY-MM-DD)
+            example: "2026-02-14"
+          concepto:
+            type: string
+            description: Descripción o asunto del movimiento
+            example: "Compra Mercadona"
+          monto:
+            type: number
+            format: float
+            description: Cantidad (negativo para gastos, positivo para ingresos)
+            example: -45.50
+          categoria:
+            type: string
+            description: Categoría asignada
+            example: "Alimentación"
+  500:
+    description: Error interno del servidor
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "NO se pudieron recuperar las transacciones: error de conexión"

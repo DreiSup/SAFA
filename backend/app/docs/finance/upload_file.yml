@@ -1,0 +1,16 @@
+tags:
+  - Microeconomía
+summary: Subir un archivo de transacciones
+parameters:
+  - name: file
+    in: formData
+    type: file
+    required: true
+    description: Archivo CSV o Excel con los movimientos bancarios.
+responses:
+  201:
+    description: Importación exitosa
+  400:
+    description: No se seleccionó archivo o clave incorrecta
+  500:
+    description: Error procesando el archivo

@@ -1,0 +1,14 @@
+tags:
+  - Microeconomía
+summary: Eliminar una transacción específica
+parameters:
+  - name: transaction_id
+    in: path
+    type: integer
+    required: true
+    description: El ID numérico de la transacción a borrar.
+responses:
+  200:
+    description: Transacción eliminada
+  404:
+    description: Transacción no encontrada

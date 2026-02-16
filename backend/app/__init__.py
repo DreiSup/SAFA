@@ -3,6 +3,8 @@ from flask import Flask
 from .extensions import db, mongo
 from dotenv import load_dotenv
 from flask_cors import CORS
+from flasgger import Swagger
+from .swagger_config import swagger_config, swagger_template
 
 # Importar modelos para que SQLAlchemy los registre al arrancar
 from .models.transaction import Transaccion
@@ -26,6 +28,8 @@ def create_app():
             "origins": ["http://localhost:5173", "http://127.0.0.1:5173"]
         }
     }, supports_credentials=True)
+
+    Swagger(app, config=swagger_config, template=swagger_template)
 
     # Crear tablas automáticamente (Solo desarrollo)
     with app.app_context():

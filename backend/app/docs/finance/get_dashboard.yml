@@ -1,0 +1,11 @@
+tags:
+  - Microeconomía
+summary: Resumen métrico del dashboard
+parameters:
+  - name: mes
+    in: query
+    type: string
+    description: Filtro opcional en formato YYYY-MM
+responses:
+  200:
+    description: JSON con balance_total y desglose_por_categoria

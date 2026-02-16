@@ -7,6 +7,7 @@ from app.extensions import db
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import calendar
+from flasgger import swag_from
 
 finance_bp = Blueprint('finance', __name__, url_prefix='/api/finance')
 
@@ -14,7 +15,12 @@ finance_bp = Blueprint('finance', __name__, url_prefix='/api/finance')
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Esto detecta dónde está 'finance.py' y construye la ruta hacia 'docs'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.join(BASE_DIR, '..', 'docs', 'finance')
+
 @finance_bp.route('/transactions', methods=['GET'])
+@swag_from(os.path.join(DOCS_DIR, 'get_transactions.yml'))
 def get_transactions():
     """ Todas las transacciones de la db """
     try:
@@ -39,6 +45,7 @@ def get_transactions():
 
 
 @finance_bp.route('/upload', methods=['POST'])
+@swag_from(os.path.join(DOCS_DIR, 'upload_file.yml'))
 def upload_file():
 
     if 'file' not in request.files:
@@ -68,6 +75,7 @@ def upload_file():
 
 
 @finance_bp.route('/transactions', methods=['DELETE'])
+@swag_from(os.path.join(DOCS_DIR, 'delete_transactions.yml'))
 def delete_all_transactions():
     try:
 
@@ -85,6 +93,7 @@ def delete_all_transactions():
 
 
 @finance_bp.route('/transactions/<int:transaction_id>', methods=['DELETE'])
+@swag_from(os.path.join(DOCS_DIR, 'delete_single_transaction.yml'))
 def delete_transaction(transaction_id):
     """ Elimina una transaction específica """
     try:
@@ -105,6 +114,7 @@ def delete_transaction(transaction_id):
     
 
 @finance_bp.route('/dashboard', methods=['GET'])
+@swag_from(os.path.join(DOCS_DIR, 'get_dashboard.yml'))
 def get_dashboard_data():
     """ Devuelve métricas agregadas (balance total y gastos por categoría)"""
     try:

@@ -1,0 +1,25 @@
+tags:
+  - Microeconomía
+summary: Eliminar TODAS las transacciones
+description: ⚠️ ¡Cuidado! Esta operación borra permanentemente todo el historial de transacciones de la base de datos. No se puede deshacer.
+responses:
+  200:
+    description: Base de datos limpiada con éxito
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Base de datos limpiada correctamente"
+        total_borrado:
+          type: integer
+          description: Número total de registros eliminados
+          example: 142
+  500:
+    description: Error crítico al intentar borrar
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error al eliminar todas las transacciones"
