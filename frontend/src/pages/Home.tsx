@@ -8,6 +8,24 @@ const Home = () => {
     const [data, setData] = useState<DashboardData | null>(null)
     const [error, setError] = useState<string | null>(null)
 
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [dashData, transData] = await Promise.all([
+                financeService.getDashboard(),
+                financeService.getTransactions()
+            ]);
+            
+            setDashboard(dashData);
+            setTransactions(transData);
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const loadDashboard = async () => {
         try {
             console.log("klk manins")
@@ -20,15 +38,44 @@ const Home = () => {
     }
 
 
+
+
+
+
+    const handleDeleteAll = async () => {
+        /* Cambiar a un componente shadcn */
+        const confirmacion = confirm("Estás seguro de que quieres borrar todas las transacciones?") 
+
+        if (confirmacion) {
+            try {
+                await financeService.deleteAllTransactions()
+                loadData()
+                alert("Base de datos reiniciada")
+            } catch (error) {
+                console.log(error)
+            }
+
+        }
+    }
+
+
   return (
     <>
         <div className=''>Home</div>
 
-        <Button onClick={loadDashboard} variant="outline">
-            Recargar
-        </Button>
+        <div>
+            <Button onClick={loadDashboard} variant="outline">
+                Recargar
+            </Button>
+            <Button onClick={handleDeleteAll} variant="outline">
+                Recargar
+            </Button>
+
+        </div>
 
         
+
+
 
         <Table>
             <TableCaption>A list of your recent invoices.</TableCaption>
