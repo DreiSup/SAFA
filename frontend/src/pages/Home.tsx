@@ -5,6 +5,8 @@ import React, { useState } from 'react'
 
 const Home = () => {
 
+
+    const [loading, setLoading] = useState<boolean>(false)
     const [data, setData] = useState<DashboardData | null>(null)
     const [error, setError] = useState<string | null>(null)
 
