@@ -3,6 +3,7 @@ import json
 import requests
 from confluent_kafka import Producer
 
+
 # CONFIGURACION
 KAFKA_TOPIC = 'bitcoin_ticker'
 KAFKA_CONF = {
