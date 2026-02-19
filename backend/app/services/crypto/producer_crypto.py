@@ -31,11 +31,25 @@ def run_producer():
     producer = Producer(KAFKA_CONF)
     print("Productor de Bitcoin iniciado. Intervalo: {NORMAL_INTERVAL}.")
 
+    current_sleep = NORMAL_INTERVAL
+
     try:
         while True:
             # Obtener precio real (Binance API)
             try:
                 response = requests.get(API_URL, timeout=5)
+
+                if response.status_code == 429:
+                    print(f"BINANCE NOS HA BLOQUEADO. Esperando {ERROR_INTERVAL}s para enfriar...")
+                    time.sleep(ERROR_INTERVAL)
+                    current_sleep = NORMAL_INTERVAL
+                    continue
+
+                if response.status_code != 200:
+                    print(f"Error API: {response.status_code} - {response.text}")
+                    time.sleep(NORMAL_INTERVAL)
+                    continue
+
                 data = response.json()
 
                 # Preparamos JSON
@@ -43,23 +57,28 @@ def run_producer():
                     "asset": "Bitcoin",
                     "symbol": "BTC/USTD",
                     "price": float(data['price']),
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
+                    "source": "Binance REST"
                 }
-
-                # Convertir a bytes para Kafka
-                mensaje_bytes = json.dumps(mensaje).encode('utf-8')
 
                 # Enviar a Kafka
                 # produce(topic, value, callback) es asíncrono
-                producer.produce(KAFKA_TOPIC, value=mensaje_bytes, callback=delivery_report)
+                producer.produce(KAFKA_TOPIC, json.dumps(mensaje).encode('utf-8'), callback=delivery_report)
 
                 # Forzar que se envíen los paquetes encolados
                 producer.poll(0)
-            
-            except Exception as e: 
-                print(f"Error obteniendo precio: {e}")
 
-            time.sleep(2)
+                # Feedback visual mínimo (un punto cada vez que envía)
+                print(".", end="", flush=True)
+            
+            except requests.exceptions.ConnectionError:
+                print("\n🔌 Sin conexión a Internet. Reintentando...")
+            except Exception as e:
+                print(f"\n⚠️ Error inesperado: {e}")
+
+            # Dormir lo que toque (normalmente 5s)
+            time.sleep(current_sleep)
+
     except KeyboardInterrupt:
         print("\n Deteniendo productor...")
 
