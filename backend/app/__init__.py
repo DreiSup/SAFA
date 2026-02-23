@@ -38,6 +38,9 @@ def create_app():
     # Registrar Blueprints (Las Rutas)
     from .routes.core import core_bp
     app.register_blueprint(core_bp)
+
+    from app.routes.macro_routes import macro_bp
+    app.register_blueprint(macro_bp)
     
     # Aquí registraremos finance_bp
     from .routes.finance import finance_bp

@@ -70,7 +70,7 @@ const Home = () => {
                 Recargar
             </Button>
             <Button onClick={handleDeleteAll} variant="outline">
-                Recargar
+                Borrar todo
             </Button>
 
         </div>

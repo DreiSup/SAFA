@@ -3,6 +3,7 @@ import requests
 from pathlib import Path
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from pymongo import UpdateOne
 
 # 1. CARGAR ENTORNO
 env_path = Path(os.getcwd()) / '.env'
@@ -46,14 +47,35 @@ def seed_historical_data():
             }
             historical_docs.append(doc)
 
-        # 4. Insertar de golpe en MongoDB (Bulk Insert)
+        # 4. Inserción Inteligente (Bulk Upsert)
         if historical_docs:
-            # Opcional: Limpiar la colección antes para no duplicar si ejecutas esto varias veces
-            # collection.delete_many({"source": "Binance Historical 1h"}) 
+            print(f"🔄 Procesando {len(historical_docs)} registros. Evitando duplicados...")
             
-            collection.insert_many(historical_docs)
-            print(f"✅ ¡Éxito! Se han guardado {len(historical_docs)} registros históricos en MongoDB.")
+            # Preparamos una lista de operaciones
+            operations = []
+            for doc in historical_docs:
+                # Definimos la regla: Buscar por Símbolo y Timestamp
+                filtro_busqueda = {
+                    "symbol": doc["symbol"], 
+                    "timestamp": doc["timestamp"]
+                }
+                
+                # UpdateOne(filtro, datos_nuevos, upsert=True)
+                # Si lo encuentra, lo actualiza ($set). Si no lo encuentra, lo inserta.
+                operacion = UpdateOne(
+                    filtro_busqueda,
+                    {"$set": doc},
+                    upsert=True
+                )
+                operations.append(operacion)
 
+            # Ejecutamos todas las operaciones de golpe por eficiencia
+            resultado = collection.bulk_write(operations)
+            
+            print(f"✅ Completado:")
+            print(f"   - Nuevos insertados: {resultado.upserted_count}")
+            print(f"   - Existentes actualizados: {resultado.modified_count}")
+        
     except Exception as e:
         print(f"❌ Error durante la siembra de datos: {e}")
     finally:
