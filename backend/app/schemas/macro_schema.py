@@ -14,3 +14,16 @@ class BitcoinPriceSchema(Schema):
 
 # Instanciamos el esquema para devolver listas de precios (many=True)
 bitcoin_list_schema = BitcoinPriceSchema(many=True)
+
+
+class SP500PriceSchema(Schema):
+    """
+    Esquema para serializar los datos históricos del S&P500.
+    """
+    asset = fields.Str(dump_default="S&P 500", metadata={"description": "Nombre del índice"})
+    symbol = fields.Str(dump_default="^GSPC", metadata={"description": "Ticker de Yahoo Finance"})
+    price = fields.Float(required=True, metadata={"description": "Precio de cierre"})
+    timestamp = fields.Float(required=True, metadata={"description": "Marca de tiempo en segundos (Unix)"})
+    source = fields.Str(metadata={"description": "Origen de los datos (ej. Yahoo Finance)"})
+
+sp500_list_schema = SP500PriceSchema(many=True)
