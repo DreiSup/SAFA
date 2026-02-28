@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from .extensions import db, mongo
+from .extensions import db, mongo, socketio
 from dotenv import load_dotenv
 from flask_cors import CORS
 from flasgger import Swagger
@@ -23,6 +23,9 @@ def create_app():
     db.init_app(app)
     mongo.init_app(app)
 
+    # cors_allowed_origins="*" es VITAL para que React (que corre en otro puerto) pueda conectarse
+    socketio.init_app(app, cors_allowed_origins="*")
+
     CORS(app, resources={
         r"/api/*": {
             "origins": ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -35,6 +38,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+
     # Registrar Blueprints (Las Rutas)
     from .routes.core import core_bp
     app.register_blueprint(core_bp)
@@ -45,5 +49,9 @@ def create_app():
     # Aquí registraremos finance_bp
     from .routes.finance import finance_bp
     app.register_blueprint(finance_bp)
+
+
+    from .websockets import emit_realtime_data
+    socketio.start_background_task(emit_realtime_data)
 
     return app

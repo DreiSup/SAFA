@@ -7,12 +7,12 @@ import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 const chartConfig = {
     btc: {
         label: "Precio BTC ($)",
-        color: "hsl(var(--chart-1))", // Usa los colores de tu tema de Shadcn
+        color: "hsl(var(--chart-3))", // Usa los colores de tu tema de Shadcn
         
     },
     sp500: {
         label: "Precio S&P500 ($)",
-        color: "hsl(var(--chart-2))", // Usa los colores de tu tema de Shadcn
+        color: "hsl(var(--chart-1))", // Usa los colores de tu tema de Shadcn
   },
 }
 
@@ -50,10 +50,10 @@ const Chart = () => {
                     const dateKey = date.toLocaleDateString("es-ES", { month: "short", day: "numeric" })
                     
                     if (mergedDataMap.has(dateKey)) {
-                    // Si ya existe la fecha (por el BTC), le añadimos el precio del SP500
-                    const existing = mergedDataMap.get(dateKey)
-                    existing.price_sp500 = item.price
-                    mergedDataMap.set(dateKey, existing)
+                        // Si ya existe la fecha (por el BTC), le añadimos el precio del SP500
+                        const existing = mergedDataMap.get(dateKey)
+                        existing.price_sp500 = item.price
+                        mergedDataMap.set(dateKey, existing)
                     }
                 })
 
@@ -86,9 +86,9 @@ const Chart = () => {
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
                     <XAxis 
                         dataKey="formattedDate" 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tickMargin={8}
+                        tickLine={true} 
+                        axisLine={true} 
+                        tickMargin={20}
                         minTickGap={30} 
                     />
                     
@@ -97,8 +97,8 @@ const Chart = () => {
                         yAxisId="left"
                         domain={['auto', 'auto']} 
                         tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        tickLine={false}
-                        axisLine={false}
+                        tickLine={true}
+                        axisLine={true}
                         width={80}
                     />
                     
@@ -108,8 +108,8 @@ const Chart = () => {
                         orientation="right"
                         domain={['auto', 'auto']} 
                         tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        tickLine={false}
-                        axisLine={false}
+                        tickLine={true}
+                        axisLine={true}
                         width={60}
                     />
 
