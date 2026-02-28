@@ -5,56 +5,81 @@ import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 
 
 const chartConfig = {
-  price: {
-    label: "Precio BTC ($)",
-    color: "hsl(var(--chart-1))", // Usa los colores de tu tema de Shadcn
+    btc: {
+        label: "Precio BTC ($)",
+        color: "hsl(var(--chart-1))", // Usa los colores de tu tema de Shadcn
+        
+    },
+    sp500: {
+        label: "Precio S&P500 ($)",
+        color: "hsl(var(--chart-2))", // Usa los colores de tu tema de Shadcn
   },
 }
 
 const Chart = () => {
 
-    const [data, setData] = useState([])
+    const [data, setData] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const fetchBitcoinData = async () => {
+        const fetchMarketData = async () => {
         try {
-            // Llama al endpoint exacto que creamos
-            const response = await fetch("http://localhost:5000/api/v1/macro/bitcoin")
-            const json = await response.json()
+            // Promise,all ejecuta ambas peticiones en paralelo
+            const [btcResponse, sp500Response] = await Promise.all([
+                fetch("http://localhost:5000/api/v1/macro/bitcoin"),
+                fetch("http://localhost:5000/api/v1/macro/sp500")
+            ])
+
+            const btcJson = await btcResponse.json()
+            const sp500Json = await sp500Response.json()
             
-            if (json.status === "success") {
-            // Formateamos un poco el timestamp para que sea legible en la gráfica
-            const formattedData = json.data.map((item: any) => {
-                const date = new Date(item.timestamp * 1000) // Multiplicamos por 1000 para pasar a milisegundos
-                return {
-                ...item,
-                formattedDate: date.toLocaleDateString("es-ES", { month: "short", day: "numeric" }),
-                time: date.toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit' })
-                }
-            })
-            setData(formattedData)
+            if (btcJson.status === "success" && sp500Json.status === "success") {
+                //Creamos un diccionario para agrupar los datos por fecha
+                const mergedDataMap = new Map()
+
+                //Procesamos Bitcoin
+                btcJson.data.forEach((item: any) => {
+                    const date = new Date(item.timestamp * 1000)
+                    const dateKey = date.toLocaleDateString("es-Es", { month: "short", day: "numeric"})
+                    mergedDataMap.set(dateKey, { formattedDate: dateKey, price_btc: item.price })
+                })
+
+                // Procesamos S&P 500 y lo fusionamos con el Bitcoin en la misma fecha
+                sp500Json.data.forEach((item: any) => {
+                    const date = new Date(item.timestamp * 1000)
+                    const dateKey = date.toLocaleDateString("es-ES", { month: "short", day: "numeric" })
+                    
+                    if (mergedDataMap.has(dateKey)) {
+                    // Si ya existe la fecha (por el BTC), le añadimos el precio del SP500
+                    const existing = mergedDataMap.get(dateKey)
+                    existing.price_sp500 = item.price
+                    mergedDataMap.set(dateKey, existing)
+                    }
+                })
+
+                // Convertimos el mapa de vuelta a un array para Recharts
+                setData(Array.from(mergedDataMap.values()))
             }
         } catch (error) {
-            console.error("Error cargando los datos de Bitcoin:", error)
+            console.error("Error cargando datos macroeconómicos:", error)
         } finally {
             setLoading(false)
         }
         }
 
-        fetchBitcoinData()
+        fetchMarketData()
     }, [])
 
   return (
     <>
         <Card className="w-full">
             <CardHeader>
-                <CardTitle>Rendimiento Histórico - Bitcoin (BTC/USDT)</CardTitle>
-                <CardDescription>Últimos 30 días cargados desde MongoDB</CardDescription>
+                <CardTitle>Mercado Macro: Riesgo vs Tradición</CardTitle>
+                <CardDescription>Correlación a 30 días (Bitcoin & S&P 500)</CardDescription>
             </CardHeader>
             <CardContent>
                 {loading ? (
-                <div className="h-[300px] flex items-center justify-center">Cargando datos del mercado...</div>
+                <div className="h-[300px] flex items-center justify-center">Cargando flujos de mercado...</div>
                 ) : (
                 <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
                     <LineChart data={data} margin={{ top: 20, left: 10, right: 10, bottom: 20 }}>
@@ -64,28 +89,56 @@ const Chart = () => {
                         tickLine={false} 
                         axisLine={false} 
                         tickMargin={8}
-                        minTickGap={30} // Evita que los textos se amontonen
+                        minTickGap={30} 
                     />
+                    
+                    {/* EJE Y 1 (Izquierda) para Bitcoin */}
                     <YAxis 
-                        domain={['auto', 'auto']} // Ajusta el eje Y al precio máximo y mínimo automáticamente
+                        yAxisId="left"
+                        domain={['auto', 'auto']} 
                         tickFormatter={(value) => `$${value.toLocaleString()}`}
                         tickLine={false}
                         axisLine={false}
                         width={80}
                     />
+                    
+                    {/* EJE Y 2 (Derecha) para S&P 500 */}
+                    <YAxis 
+                        yAxisId="right"
+                        orientation="right"
+                        domain={['auto', 'auto']} 
+                        tickFormatter={(value) => `$${value.toLocaleString()}`}
+                        tickLine={false}
+                        axisLine={false}
+                        width={60}
+                    />
+
                     <Tooltip content={<ChartTooltipContent />} />
+                    
+                    {/* Línea del Bitcoin atada al eje izquierdo */}
                     <Line
+                        yAxisId="left"
                         type="monotone"
-                        dataKey="price"
-                        stroke="var(--color-price)"
+                        dataKey="price_btc"
+                        stroke="var(--color-btc)"
                         strokeWidth={2}
-                        dot={false} // Quitamos los puntos individuales para que la línea se vea limpia
+                        dot={false} 
+                    />
+                    
+                    {/* Línea del S&P 500 atada al eje derecho */}
+                    <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="price_sp500"
+                        stroke="var(--color-sp500)"
+                        strokeWidth={2}
+                        dot={false} 
                     />
                     </LineChart>
                 </ChartContainer>
                 )}
             </CardContent>
-        </Card>
+            </Card>
     </>
   )
 }
