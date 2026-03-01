@@ -3,7 +3,7 @@ import { io } from "socket.io-client"
 import { Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-const BitcoinRealTime = () => {
+const SP500RealTime = () => {
 
     const [data, setData] = useState<any[]>([])
     const [precioActual, setPrecioActual] = useState<number>(0)
@@ -12,7 +12,7 @@ const BitcoinRealTime = () => {
 
       const fetchDataInicial = async () => {
         try {
-          const response = await fetch("http://localhost:5000/api/v1/macro/bitcoin/recent?limit=90")
+          const response = await fetch("http://localhost:5000/api/v1/macro/sp500/recent?limit=90")
           const json = await response.json()
           if (json.status === "success" && json.data.length > 0) {
             //Formateamos datos igual que en Websocket
@@ -25,19 +25,19 @@ const BitcoinRealTime = () => {
             setPrecioActual(initialData[initialData.length - 1].price)
           }
         } catch (error) {
-          console.error("Algo ha ido mal al cargar datos iniciales de BTC", error)
+          console.error("Algo ha ido mal al cargar datos iniciales de SP500", error)
         }
       }
 
       fetchDataInicial()
 
       // 1. Opcional: Cargar los últimos 50 puntos vía REST para no empezar con la gráfica en blanco
-      // fetch("http://localhost:5000/api/v1/macro/bitcoin?limit=50")...
+      // fetch("http://localhost:5000/api/v1/macro/sp500?limit=50")...
 
       // 2. Encender el túnel
       const socket = io("http://localhost:5000")
 
-      socket.on("update_btc", (nuevoDato) => {
+      socket.on("update_sp500", (nuevoDato) => {
         const date = new Date(nuevoDato.timestamp * 1000)
         const horaFormateada = date.toLocaleTimeString("es-ES") 
         
@@ -65,7 +65,7 @@ const BitcoinRealTime = () => {
     <>
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle>Bitcoin (Live)</CardTitle>
+                <CardTitle>SP500 (Live)</CardTitle>
                 <div className="text-2xl font-bold text-green-500">
                 ${precioActual.toLocaleString()}
                 </div>
@@ -94,4 +94,4 @@ const BitcoinRealTime = () => {
   )
 }
 
-export default BitcoinRealTime
+export default SP500RealTime

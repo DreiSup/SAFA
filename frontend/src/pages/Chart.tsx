@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip } from "recharts"
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
+import {
+     ChartContainer,
+     ChartTooltip,
+     ChartTooltipContent,
+    type ChartConfig 
+} from "@/components/ui/chart"
 
 
 const chartConfig = {
@@ -14,7 +19,7 @@ const chartConfig = {
         label: "Precio S&P500 ($)",
         color: "hsl(var(--chart-1))", // Usa los colores de tu tema de Shadcn
   },
-}
+} satisfies ChartConfig
 
 const Chart = () => {
 
@@ -41,7 +46,7 @@ const Chart = () => {
                 btcJson.data.forEach((item: any) => {
                     const date = new Date(item.timestamp * 1000)
                     const dateKey = date.toLocaleDateString("es-Es", { month: "short", day: "numeric"})
-                    mergedDataMap.set(dateKey, { formattedDate: dateKey, price_btc: item.price })
+                    mergedDataMap.set(dateKey, { formattedDate: dateKey, btc: item.price })
                 })
 
                 // Procesamos S&P 500 y lo fusionamos con el Bitcoin en la misma fecha
@@ -52,7 +57,7 @@ const Chart = () => {
                     if (mergedDataMap.has(dateKey)) {
                         // Si ya existe la fecha (por el BTC), le añadimos el precio del SP500
                         const existing = mergedDataMap.get(dateKey)
-                        existing.price_sp500 = item.price
+                        existing.sp500 = item.price
                         mergedDataMap.set(dateKey, existing)
                     }
                 })
@@ -66,79 +71,72 @@ const Chart = () => {
             setLoading(false)
         }
         }
-
         fetchMarketData()
     }, [])
 
   return (
     <>
         <Card className="w-full">
-            <CardHeader>
-                <CardTitle>Mercado Macro: Riesgo vs Tradición</CardTitle>
-                <CardDescription>Correlación a 30 días (Bitcoin & S&P 500)</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {loading ? (
-                <div className="h-[300px] flex items-center justify-center">Cargando flujos de mercado...</div>
-                ) : (
-                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                    <LineChart data={data} margin={{ top: 20, left: 10, right: 10, bottom: 20 }}>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <CardHeader>
+            <CardTitle>Mercado Macro: Riesgo vs Tradición</CardTitle>
+            <CardDescription>Correlación a 30 días (Bitcoin & S&P 500)</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {loading ? (
+            <div className="h-[300px] flex items-center justify-center">Cargando flujos de mercado...</div>
+            ) : (
+            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                <AreaChart accessibilityLayer data={data} margin={{top: 20, left: 10, right: 10, bottom: 20 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                    
                     <XAxis 
                         dataKey="formattedDate" 
-                        tickLine={true} 
-                        axisLine={true} 
-                        tickMargin={20}
-                        minTickGap={30} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickMargin={10}
+                        minTickGap={30}
                     />
                     
-                    {/* EJE Y 1 (Izquierda) para Bitcoin */}
-                    <YAxis 
-                        yAxisId="left"
-                        domain={['auto', 'auto']} 
-                        tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        tickLine={true}
-                        axisLine={true}
-                        width={80}
-                    />
-                    
-                    {/* EJE Y 2 (Derecha) para S&P 500 */}
-                    <YAxis 
-                        yAxisId="right"
-                        orientation="right"
-                        domain={['auto', 'auto']} 
-                        tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        tickLine={true}
-                        axisLine={true}
-                        width={60}
-                    />
+                    {/* 3. CORRECCIÓN: Añadimos Ejes Y invisibles para independizar las escalas */}
+                    <YAxis yAxisId="left" domain={['auto', 'auto']} hide />
+                    <YAxis yAxisId="right" orientation="right" domain={['auto', 'auto']} hide />
 
-                    <Tooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                     
-                    {/* Línea del Bitcoin atada al eje izquierdo */}
-                    <Line
+                    <defs>
+                        {/* 4. CORRECCIÓN: Colores arreglados en los gradientes */}
+                        <linearGradient id="fillBtc" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-btc)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-btc)" stopOpacity={0.0}/>
+                        </linearGradient>
+                        <linearGradient id="fillSp500" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-sp500)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-sp500)" stopOpacity={0.0}/>
+                        </linearGradient>
+                    </defs>
+
+                    {/* 5. CORRECCIÓN: Quitamos stackId y atamos a su eje correspondiente */}
+                    <Area
                         yAxisId="left"
+                        dataKey="btc"
                         type="monotone"
-                        dataKey="price_btc"
+                        fill="url(#fillBtc)"
                         stroke="var(--color-btc)"
                         strokeWidth={2}
-                        dot={false} 
                     />
-                    
-                    {/* Línea del S&P 500 atada al eje derecho */}
-                    <Line
+                    <Area
                         yAxisId="right"
+                        dataKey="sp500"
                         type="monotone"
-                        dataKey="price_sp500"
+                        fill="url(#fillSp500)"
                         stroke="var(--color-sp500)"
                         strokeWidth={2}
-                        dot={false} 
                     />
-                    </LineChart>
-                </ChartContainer>
-                )}
-            </CardContent>
-            </Card>
+                </AreaChart>
+            </ChartContainer>
+            )}
+        </CardContent>
+    </Card>
     </>
   )
 }

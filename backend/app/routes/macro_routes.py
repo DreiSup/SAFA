@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
 from app.schemas.macro_schema import bitcoin_list_schema
@@ -50,6 +50,50 @@ def get_bitcoin_history():
             "status": "error",
             "message": f"Error al obtener los datos: {str(e)}"
         }), 500
+    
+
+@macro_bp.route('/bitcoin/recent', methods=['GET'])
+def get_recent_bitcoin():
+    """ Obtener precios recientes de Bitcoin.
+     ---
+    tags: 
+       - Macroeconomia
+    summary: Devuelve últimos precios de Bitcoin, 30d por defecto.
+    description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+    responses:
+      200:
+        description: Lista de precios de Bitcoin devuelta exitosamente.
+      500:
+        description: Error interno del servidor.
+          """
+    
+    try: 
+
+        limit = request.args.get('limit', default=30, type=int)
+
+        # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
+        cursor = collection_bitcoin.find().sort("timestamp", -1).limit(limit)
+        raw_data = list(cursor)
+
+        # Invertimos data para que el grafico pinte de izq a der
+        raw_data.reverse()
+
+        # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
+        result = bitcoin_list_schema.dump(raw_data)
+
+        print(result)
+
+        # 3. Respuesta limpia y estructurada
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e: 
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener los datos: {str(e)}"
+        }), 500
 
 
 @macro_bp.route('/sp500', methods=['GET'])
@@ -89,4 +133,46 @@ def get_sp500_history():
             "message": f"Error al obtener los datos: {str(e)}"
         }), 500
 
-        
+
+@macro_bp.route('/sp500/recent', methods=['GET'])
+def get_recent_sp500():
+    """ Obtener precios recientes de SP500.
+     ---
+    tags: 
+       - Macroeconomia
+    summary: Devuelve últimos precios de SP500, 30d por defecto.
+    description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+    responses:
+      200:
+        description: Lista de precios de SP500 devuelta exitosamente.
+      500:
+        description: Error interno del servidor.
+          """
+    
+    try: 
+
+        limit = request.args.get('limit', default=30, type=int)
+
+        # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
+        cursor = collection_sp500.find().sort("timestamp", -1).limit(limit)
+        raw_data = list(cursor)
+
+        # Invertimos data para que el grafico pinte de izq a der
+        raw_data.reverse()
+
+        # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
+        result = sp500_list_schema.dump(raw_data)
+
+        print(result)
+
+        # 3. Respuesta limpia y estructurada
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e: 
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener los datos: {str(e)}"
+        }), 500
