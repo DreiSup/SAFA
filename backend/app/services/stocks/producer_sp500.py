@@ -43,7 +43,7 @@ def run_producer():
     producer = Producer(KAFKA_CONF)
     ticker = yf.Ticker('^GSPC') # S&P 500 Index
 
-    print("Productor de SP500 iniciado. Intervalo: {INTERVAL}.")
+    print(f"Productor de SP500 iniciado. Intervalo: {INTERVAL}.")
 
     try:
         while True:
