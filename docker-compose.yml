@@ -17,7 +17,7 @@ services:
 
   # 2. Mongo
   mongo_db:
-    image: mongo:6.0
+    image: mongo:7.0
     container_name: safa_mongo
     restart: always
     environment:

@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate, ValidationError
 
 class BitcoinPriceSchema(Schema): 
     """
@@ -27,3 +27,20 @@ class SP500PriceSchema(Schema):
     source = fields.Str(metadata={"description": "Origen de los datos (ej. Yahoo Finance)"})
 
 sp500_list_schema = SP500PriceSchema(many=True)
+
+
+class MacroNewsSchema(Schema):
+    # Definimos campos exactos y tipos de datos
+    source = fields.String(required=True, validate=validate.Length(min=1))
+    title = fields.String(required=True, validate=validate.Length(min=5))
+    description = fields.Strings(missing="") # Si no hay descripción, string vacío
+    published_at = fields.DateTime(required=True)
+    asset_type = fields.String(required=True, validate=validate.OneOf(["macro"]))
+
+    # El target solo puede ser uno de estos tres. SI llega otra cosa, explota aquí y no en la IA
+    target = fields.String(
+        required=True,
+        validate=validate.OneOf(["bitcoin", "sp500", "general_macro"])
+    )
+
+news_validator = MacroNewsSchema()
