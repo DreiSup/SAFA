@@ -3,7 +3,11 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType
 import json
-from macro_schema import MacroNewsSchema
+from app.schemas.macro_schema import MacroNewsSchema
+from app.utils.logger_setup import get_logger
+
+
+logger = get_logger("Spark_consumer")
 
 
 # 🔥 Obtenemos la versión exacta que 'pip' instaló en tu PC (ej. 3.5.1)
@@ -45,7 +49,7 @@ def validar_noticia(json_string):
 
     except Exception as e:
         #Si Marshmallow bloquea el dato, capturamos error y lo devolvemos 
-        print(f"Error en UDF: {e}")
+        logger.error(f"Error en UDF: {e}")
         return "DATO_CORRUPTO"
     
 # Convertimos nuestra función Python en una función que Spark entiende nativamente
@@ -54,7 +58,7 @@ validador_udf = udf(validar_noticia, StringType())
 #----------------------------------
 # 3. CONECTAR A KAFKA, INGESTA
 #----------------------------------
-print("⏳ Conectando Spark a Kafka")
+logger.info("⏳ Conectando Spark a Kafka")
 flujo_kafka = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "localhost:9092") \
@@ -77,7 +81,7 @@ flujo_limpio = flujo_procesado.filter(col("json_validado") != "DATO_CORRUPTO")
 #----------------------------------
 # 5. LA SALIDA (para visualizar antes de meter FinBERT)
 #----------------------------------
-print("Motor de Streaming Iniciado. Esperando noticias...")
+logger.info("Motor de Streaming Iniciado. Esperando noticias...")
 query = flujo_limpio.select("json_validado") \
     .writeStream \
     .outputMode("append") \

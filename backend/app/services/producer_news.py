@@ -5,6 +5,10 @@ import requests
 from confluent_kafka import Producer
 from dotenv import load_dotenv
 import urllib.parse
+from app.utils.logger_setup import get_logger
+
+# Inicializamos el logger pasándole el nombre de este archivo
+logger = get_logger("Producer_News")
 
 load_dotenv()
 
@@ -23,10 +27,10 @@ MAX_MEMORIA = 100 # Evitamos que la memoria RAM crezca infinitamente
 
 def delivery_report(err, msg):
     if err is not None: 
-        print(f"Error enviando mensaje:{err}")
+        logger.error(f"Error enviando mensaje:{err}")
     else:
         # Imprimimos solo los primeros 30 caracteres del título para no saturar la consola
-        print(f"Titular enviado a Kafka: {msg.value().decode("utf-8")[15:45]}...")
+        logger.info (f"Titular enviado a Kafka: {msg.value().decode("utf-8")[15:45]}...")
 
 
 def limpiar_memoria():
@@ -39,11 +43,11 @@ def limpiar_memoria():
 
 def run_producer():
     if not NEWS_API_KEY:
-        print("❌ Error: Falta NEWS_API_KEY en el archivo .env")
+        logger.error("❌ Error: Falta NEWS_API_KEY en el archivo .env")
         return
 
     producer = Producer(KAFKA_CONF)
-    print(f"📰 Productor de Noticias iniciado. Intervalo: {INTERVAL}s. Estrategia: Popularidad.")
+    logger.info(f"📰 Productor de Noticias iniciado. Intervalo: {INTERVAL}s. Estrategia: Popularidad.")
 
     # 1. Definimos la query con comillas dobles para forzar la frase exacta
     query_raw = 'bitcoin OR "S&P 500" OR crypto OR "stock market"'
@@ -106,17 +110,17 @@ def run_producer():
                             break
                     
                     producer.poll(0)
-                    print(f"⏳ Lote procesado ({nuevos_enviados} noticias nuevas). Esperando {INTERVAL}s...")
+                    logger.info(f"⏳ Lote procesado ({nuevos_enviados} noticias nuevas). Esperando {INTERVAL}s...")
                 else:
-                    print(f"⚠️ Error en NewsAPI: {response.status_code}")
+                    logger.error(f"⚠️ Error en NewsAPI: {response.status_code}")
             
             except Exception as e:
-                print(f"⚠️ Error en el bucle: {e}")
+                logger.error(f"⚠️ Error en el bucle: {e}")
 
             time.sleep(INTERVAL)
 
     except KeyboardInterrupt:
-        print("\n🛑 Deteniendo productor de noticias...")
+        logger.info("\n🛑 Deteniendo productor de noticias...")
     finally:
         producer.flush()
 

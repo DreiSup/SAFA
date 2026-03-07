@@ -13,3 +13,6 @@ mongo_data/
 .vscode/
 .idea/
 .DS_Store
+
+
+ml_models/
