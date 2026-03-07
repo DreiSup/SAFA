@@ -33,7 +33,7 @@ class MacroNewsSchema(Schema):
     # Definimos campos exactos y tipos de datos
     source = fields.String(required=True, validate=validate.Length(min=1))
     title = fields.String(required=True, validate=validate.Length(min=5))
-    description = fields.Strings(missing="") # Si no hay descripción, string vacío
+    description = fields.String(missing="") # Si no hay descripción, string vacío
     published_at = fields.DateTime(required=True)
     asset_type = fields.String(required=True, validate=validate.OneOf(["macro"]))
 
