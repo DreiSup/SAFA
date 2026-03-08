@@ -82,11 +82,15 @@ flujo_limpio = flujo_procesado.filter(col("json_validado") != "DATO_CORRUPTO")
 # 5. LA SALIDA (para visualizar antes de meter FinBERT)
 #----------------------------------
 logger.info("Motor de Streaming Iniciado. Esperando noticias...")
+
+def procesar_batch(batch_df, batch_id):
+    # Acceso a los datos de cada batch
+    # batch_df es un DataFrame normal de Spark
+    pass
+
 query = flujo_limpio.select("json_validado") \
     .writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .option("truncate", "false") \
+    .foreachBatch(procesar_batch) \
     .start()
 
 query.awaitTermination()
