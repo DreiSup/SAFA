@@ -5,6 +5,7 @@ from pyspark.sql.types import StringType
 import json
 from app.schemas.macro_schema import MacroNewsSchema
 from app.utils.logger_setup import get_logger
+from app.services.finbert.sentiment_analyzer import analizar_sentimiento
 
 
 logger = get_logger("Spark_consumer")
@@ -63,6 +64,7 @@ flujo_kafka = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "localhost:9092") \
     .option("subscribe", "news_ticker") \
+    .option("startingOffsets", "earliest") \
     .load()
 
 #----------------------------------
@@ -86,7 +88,33 @@ logger.info("Motor de Streaming Iniciado. Esperando noticias...")
 def procesar_batch(batch_df, batch_id):
     # Acceso a los datos de cada batch
     # batch_df es un DataFrame normal de Spark
-    pass
+
+    if batch_df.isEmpty():
+        return
+    
+    filas = batch_df.collect()
+    noticias_originales = []
+    textos = []
+
+    for fila in filas:
+        datos = json.loads(fila["json_validado"])
+        noticias_originales.append(datos)
+        textos.append(datos["title"] + "." + datos["description"])
+
+    logger.info(f"TEXTOS: {textos}")
+
+    resp_fin = analizar_sentimiento(textos)
+
+    logger.info(resp_fin)
+
+    noticias_para_mdb = []
+    
+    for noticia, sentimiento in zip(noticias_originales, resp_fin):
+        noticias_para_mdb.append({**noticia,"sentimiento": sentimiento})
+
+    logger.info(f"NOTICIAS PARA MONGO: {noticias_para_mdb}")
+
+    
 
 query = flujo_limpio.select("json_validado") \
     .writeStream \

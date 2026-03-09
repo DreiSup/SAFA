@@ -16,3 +16,8 @@ mongo_data/
 
 
 ml_models/
+
+
+# Logs
+logs/
+*.log
