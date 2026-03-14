@@ -17,4 +17,4 @@ def get_finbert():
         )
         logger.info("FinBERT listo.")
 
-        return _model
+    return _model

@@ -19,7 +19,7 @@ KAFKA_CONF = {
     'client.id': 'safa-news-producer'
 }
 NEWS_API_KEY = os.getenv('NEWS_API_KEY')
-INTERVAL = 1800 # 30 min para no agotar las 100 peticiones diarias 
+INTERVAL = 30 # 30 min para no agotar las 100 peticiones diarias 
 
 # Memoria para no enviar noticias repetidas al modelo de IA
 titulares_enviados = set()
