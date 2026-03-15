@@ -4,6 +4,7 @@ from confluent_kafka import Consumer, KafkaError
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
+from app.repositories.mongo_repository import insert_one
 
 # --- CONFIGURACION KAFKA ---
 KAFKA_CONF = {
@@ -17,7 +18,7 @@ load_dotenv()
 
 MONGO_URI=os.getenv('MONGO_URI')
 DB_NAME='safa_macro'
-COLLECTION_NAME = 'sp500_prices'
+COLLECTION_NAME = 'prices'
 
 # --- DISCIPLINA: VERIFICACIÓN VISUAL ---
 print(f"🔍 DEBUG: Intentando conectar a Mongo con esta URI: {MONGO_URI}")
@@ -26,7 +27,6 @@ def run_consumer():
     try: 
         mongo_client = MongoClient(MONGO_URI)
         db = mongo_client[DB_NAME]
-        collection = db[COLLECTION_NAME]
 
         mongo_client.admin.command('ping')
         print("Conectado exitosamente a MongoDB")
@@ -57,7 +57,7 @@ def run_consumer():
                 data_str = msg.value().decode('utf-8')
                 data_json = json.loads(data_str)
 
-                result = collection.insert_one(data_json)
+                result = insert_one(COLLECTION_NAME, data_json)
 
                 print(f"💾 Guardado en Mongo ID: {result.inserted_id} | Precio: {data_json['price']}")
 

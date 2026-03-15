@@ -7,7 +7,7 @@ import pandas as pd
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection = db['sp500_prices'] # <-- Nueva colección
+collection = db['prices'] # <-- Nueva colección
 
 def seed_sp500():
     print("Iniciando descarga de datos históricos del S&P500...")

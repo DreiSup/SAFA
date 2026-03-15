@@ -15,7 +15,7 @@ def emit_realtime_data():
     mongo_uri = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
     client = MongoClient(mongo_uri)
     db = client['safa_macro']
-    collection = db['bitcoin_prices']
+    collection = db['prices']
 
     print("🎙️ Locutor WebSocket iniciado. Vigilando base de datos...")
 

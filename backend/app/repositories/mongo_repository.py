@@ -22,7 +22,7 @@ def insert_one(collection_name, document):
 
     db = client[DB_NAME]
     collection = db[collection_name]
-    collection.insert_one(document)
+    return collection.insert_one(document)
 
 
 def insert_many(collection_name, documents):

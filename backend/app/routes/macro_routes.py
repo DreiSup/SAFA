@@ -11,8 +11,8 @@ macro_bp = Blueprint('macro', __name__, url_prefix='/api/v1/macro')
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection_bitcoin = db['bitcoin_prices']
-collection_sp500 = db['sp500_prices']
+collection_bitcoin = db['prices']
+collection_sp500 = db['prices']
 
 @macro_bp.route('/bitcoin', methods=['GET'])
 def get_bitcoin_history():
@@ -32,7 +32,7 @@ def get_bitcoin_history():
     try: 
         # 1. Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
         # Ponemos un límite de 1000 por seguridad para no colapsar la memoria de React de golpe
-        cursor = collection_bitcoin.find().sort("timestamp", 1).limit(1000)
+        cursor = collection_bitcoin.find({"asset":"Bitcoin"}).sort("timestamp", 1).limit(1000)
         raw_data = list(cursor)
 
         # 2. La magia de Marshmallow: Limpia los ObjectIds y valida los tipos de datos
@@ -72,7 +72,7 @@ def get_recent_bitcoin():
         limit = request.args.get('limit', default=30, type=int)
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_bitcoin.find().sort("timestamp", -1).limit(limit)
+        cursor = collection_bitcoin.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -114,11 +114,11 @@ def get_sp500_history():
     try: 
         # 1. Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
         # Ponemos un límite de 1000 por seguridad para no colapsar la memoria de React de golpe
-        cursor = collection_sp500.find().sort("timestamp", 1).limit(1000)
+        cursor = collection_sp500.find({"asset": "S&P 500"}).sort("timestamp", 1).limit(1000)
         raw_data = list(cursor)
 
         # 2. La magia de Marshmallow: Limpia los ObjectIds y valida los tipos de datos
-        result = bitcoin_list_schema.dump(raw_data)
+        result = sp500_list_schema.dump(raw_data)
 
         # 3. Respuesta limpia y estructurada
         return jsonify({
@@ -154,7 +154,7 @@ def get_recent_sp500():
         limit = request.args.get('limit', default=30, type=int)
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_sp500.find().sort("timestamp", -1).limit(limit)
+        cursor = collection_sp500.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der

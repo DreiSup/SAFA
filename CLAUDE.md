@@ -13,7 +13,7 @@ NewsAPI
         └─> Kafka (Docker)
               └─> consumer_spark.py (PySpark Structured Streaming)
                     ├─> FinBERT (HuggingFace) — análisis de sentimiento
-                    └─> MongoDB — noticias_enriquecidas
+                    └─> MongoDB — sentiment_news
 
 PostgreSQL — datos financieros personales del usuario (micro)
 MongoDB    — noticias y datos macro del mercado
@@ -90,7 +90,7 @@ safa/
 2. `consumer_spark.py` consume el topic de Kafka con PySpark Structured Streaming
 3. Cada artículo pasa por FinBERT → genera score de sentimiento (positive/negative/neutral)
 4. La UDF de Marshmallow valida el schema del resultado
-5. **[PRÓXIMO PASO]** El resultado enriquecido se escribe en MongoDB (`noticias_enriquecidas`)
+5. El resultado enriquecido se escribe en MongoDB (`sentiment_news`)
 6. El frontend consulta MongoDB via Flask para mostrar sentimiento en tiempo real
 
 ---
@@ -102,10 +102,8 @@ safa/
 - PySpark Structured Streaming operativo
 - FinBERT corriendo localmente y analizando sentimiento en tiempo real
 - UDF de Marshmallow activa para validación de schemas
+- Pipeline completo: noticias enriquecidas con FinBERT persistidas en MongoDB (`sentiment_news`)
 - Frontend micro casi terminado
-
-### 🔄 En progreso (próximo paso inmediato)
-- **Conectar MongoDB al final de `consumer_spark.py`** para persistir `noticias_enriquecidas`
 
 ### ⏳ Pendiente medio plazo
 - Autocategorización de noticias por Embeddings
