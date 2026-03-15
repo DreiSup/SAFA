@@ -34,20 +34,20 @@ spark.sparkContext.setLogLevel("WARN")
 #----------------------------------
 # 2. CREAR EL PUENTE DE VALIDACIÓN (UDF + Marshmallow)
 #----------------------------------
-def validar_noticia(json_string):
+def validar_new(json_string):
     """Esta función la ejecutarán los Workers de Spark en paralelo"""
     try:
         #1. Transformamos el texto crudo en un diccionario de Python
-        datos_crudos = json.loads(json_string)
+        data_crudos = json.loads(json_string)
 
         #2. MARSHMALLOW EN ACCION: Validamos contra el schema
         validator = MacroNewsSchema()
-        datos_limpios = validator.load(datos_crudos) # Si falla, lanza ValidationError
+        data_limpios = validator.load(data_crudos) # Si falla, lanza ValidationError
 
-        datos_seguros = validator.dump(datos_limpios)
+        data_seguros = validator.dump(data_limpios)
 
         # 3. Si sobrevive a Marshmallow, devolvemos empaquetado
-        return json.dumps(datos_seguros)
+        return json.dumps(data_seguros)
 
     except Exception as e:
         #Si Marshmallow bloquea el dato, capturamos error y lo devolvemos 
@@ -55,7 +55,7 @@ def validar_noticia(json_string):
         return "DATO_CORRUPTO"
     
 # Convertimos nuestra función Python en una función que Spark entiende nativamente
-validador_udf = udf(validar_noticia, StringType())
+validador_udf = udf(validar_new, StringType())
 
 #----------------------------------
 # 3. CONECTAR A KAFKA, INGESTA
@@ -84,40 +84,40 @@ flujo_limpio = flujo_procesado.filter(col("json_validado") != "DATO_CORRUPTO")
 #----------------------------------
 # 5. LA SALIDA (para visualizar antes de meter FinBERT)
 #----------------------------------
-logger.info("Motor de Streaming Iniciado. Esperando noticias...")
+logger.info("Motor de Streaming Iniciado. Esperando news...")
 
 def procesar_batch(batch_df, batch_id):
-    # Acceso a los datos de cada batch
+    # Acceso a los data de cada batch
     # batch_df es un DataFrame normal de Spark
 
     if batch_df.isEmpty():
         return
     
-    filas = batch_df.collect()
-    noticias_originales = []
-    textos = []
+    lines = batch_df.collect()
+    original_news = []
+    texts = []
 
-    """ logger.info(f"\n\nNOTICIAS ORIGINALES: {noticias_originales}")
-    logger.info(f"\n\nTEXTOS: {textos}") """
+    """ logger.info(f"\n\nnewS ORIGINALES: {original_news}")
+    logger.info(f"\n\ntexts: {texts}") """
 
-    for fila in filas:
-        datos = json.loads(fila["json_validado"])
-        noticias_originales.append(datos)
-        textos.append(datos["title"] + "." + datos["description"])
+    for line in lines:
+        data = json.loads(line["json_validado"])
+        original_news.append(data)
+        texts.append(data["title"] + "." + data["description"])
 
-    logger.info(f"TEXTOS: {textos}")
+    logger.info(f"texts: {texts}")
 
-    resp_fin = analizar_sentimiento(textos)
+    resp_fin = analizar_sentimiento(texts)
 
     logger.info(f"\n\nREPUESTA FinBERT:\n\n {resp_fin}")
 
     news_to_mdb = []
     
-    for noticia, sentimiento in zip(noticias_originales, resp_fin):
-        noticia.pop("description", None)
-        news_to_mdb.append({**noticia,"sentimiento": sentimiento})
+    for new, sentimiento in zip(original_news, resp_fin):
+        new.pop("description", None)
+        news_to_mdb.append({**new,"sentiment": sentimiento})
 
-    logger.info(f"\n\n\nNOTICIAS PARA MONGO: \n\n\n {news_to_mdb}")
+    logger.info(f"\n\n\nnewS PARA MONGO: \n\n\n {news_to_mdb}")
 
     insert_many('sentiment_news' ,news_to_mdb)
 
