@@ -32,6 +32,7 @@ export interface PriceListResponse {
 }
 
 export const financeService = {
+
     getDashboard: async (): Promise<DashboardData> => {
         try {
             const response = await api.get<DashboardData>('/finance/dashboard')
@@ -39,7 +40,6 @@ export const financeService = {
             return response.data
         } catch (error) {
             console.error("Error en financeService.getDashboard:", error)
-
             throw error;
         }
     },
@@ -51,7 +51,6 @@ export const financeService = {
             return response.data
         } catch (error) {
             console.error("Error en financeService.getDashboard:", error)
-
             throw error;
         }
     },

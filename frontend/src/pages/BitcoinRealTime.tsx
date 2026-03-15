@@ -2,11 +2,11 @@ import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
 import { Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { financeService, PricePoint } from "@/services/financeService"
+import { financeService } from "@/services/financeService"
 
 const BitcoinRealTime = () => {
 
-    const [data, setData] = useState<any[]>([])
+    const [data, setData] = useState<{ time: string; price: number }[]>([])
     const [precioActual, setPrecioActual] = useState<number>(0)
 
     useEffect(() => {
@@ -16,7 +16,7 @@ const BitcoinRealTime = () => {
           const json = await financeService.getRecentBitcoin(90)
           if (json.status === "success" && json.data.length > 0) {
             //Formateamos datos igual que en Websocket
-            const initialData = json.data.map((item: PricePoint) => ({
+            const initialData = json.data.map((item: { price: number; timestamp: number }) => ({
               time: new Date(item.timestamp * 1000).toLocaleDateString("es-ES"),
               price: item.price
             }))
