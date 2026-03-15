@@ -17,9 +17,17 @@ def get_client():
     return _client
 
 
-def insertar_uno(collection_name, documento):
+def insert_one(collection_name, document):
     client = get_client()
 
     db = client[DB_NAME]
     collection = db[collection_name]
-    collection.insert_one(documento)
+    collection.insert_one(document)
+
+
+def insert_many(collection_name, documents):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+    collection.insert_many(documents)

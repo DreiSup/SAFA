@@ -6,6 +6,7 @@ import json
 from app.schemas.macro_schema import MacroNewsSchema
 from app.utils.logger_setup import get_logger
 from app.services.finbert.sentiment_analyzer import analizar_sentimiento
+from app.repositories.mongo_repository import insert_many
 
 
 logger = get_logger("Spark_consumer")
@@ -96,6 +97,9 @@ def procesar_batch(batch_df, batch_id):
     noticias_originales = []
     textos = []
 
+    """ logger.info(f"\n\nNOTICIAS ORIGINALES: {noticias_originales}")
+    logger.info(f"\n\nTEXTOS: {textos}") """
+
     for fila in filas:
         datos = json.loads(fila["json_validado"])
         noticias_originales.append(datos)
@@ -105,14 +109,17 @@ def procesar_batch(batch_df, batch_id):
 
     resp_fin = analizar_sentimiento(textos)
 
-    logger.info(resp_fin)
+    logger.info(f"\n\nREPUESTA FinBERT:\n\n {resp_fin}")
 
-    noticias_para_mdb = []
+    news_to_mdb = []
     
     for noticia, sentimiento in zip(noticias_originales, resp_fin):
-        noticias_para_mdb.append({**noticia,"sentimiento": sentimiento})
+        noticia.pop("description", None)
+        news_to_mdb.append({**noticia,"sentimiento": sentimiento})
 
-    logger.info(f"NOTICIAS PARA MONGO: {noticias_para_mdb}")
+    logger.info(f"\n\n\nNOTICIAS PARA MONGO: \n\n\n {news_to_mdb}")
+
+    insert_many('sentiment_news' ,news_to_mdb)
 
     
 

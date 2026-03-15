@@ -73,7 +73,7 @@ services:
     container_name: safa-spark-master
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     ports:
-      - "8081:8080" # Panel visual
+      - "8082:8080" # Panel visual
       - "7077:7077" # Puerto interno de comunicación
 
   spark-worker:
