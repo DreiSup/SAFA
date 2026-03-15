@@ -19,6 +19,17 @@ export interface ApiResponse {
     error?: string;
     total_borrado?: number; // Específico para el delete all
 }
+export interface PricePoint {
+    asset: string;
+    symbol: string;
+    price: number;
+    timestamp: number;
+    source: string;
+}
+export interface PriceListResponse {
+    status: string;
+    data: PricePoint[];
+}
 
 export const financeService = {
     getDashboard: async (): Promise<DashboardData> => {
@@ -77,6 +88,26 @@ export const financeService = {
             return response.data;
         } catch (error) {
             console.error("Error borrando todo:", error);
+            throw error;
+        }
+    },
+
+    getRecentBitcoin: async (limit: number = 90): Promise<PriceListResponse> => {
+        try {
+            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit } })
+            return response.data;
+        } catch (error) {
+            console.error("Error en getRecentBitcoin:", error);
+            throw error;
+        }
+    },
+
+    getRecentSP500: async (limit: number = 90): Promise<PriceListResponse> => {
+        try {
+            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit } })
+            return response.data;
+        } catch (error) {
+            console.error("Error en getRecentSP500:", error);
             throw error;
         }
     }

@@ -4,6 +4,9 @@ from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
 from app.schemas.macro_schema import bitcoin_list_schema
 from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema
+from app.utils.logger_setup import get_logger
+
+logger = get_logger("Macro_routes")
 
 macro_bp = Blueprint('macro', __name__, url_prefix='/api/v1/macro')
 
@@ -11,8 +14,7 @@ macro_bp = Blueprint('macro', __name__, url_prefix='/api/v1/macro')
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection_bitcoin = db['prices']
-collection_sp500 = db['prices']
+collection_prices = db['prices']
 
 @macro_bp.route('/bitcoin', methods=['GET'])
 def get_bitcoin_history():
@@ -32,7 +34,7 @@ def get_bitcoin_history():
     try: 
         # 1. Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
         # Ponemos un límite de 1000 por seguridad para no colapsar la memoria de React de golpe
-        cursor = collection_bitcoin.find({"asset":"Bitcoin"}).sort("timestamp", 1).limit(1000)
+        cursor = collection_prices.find({"asset":"Bitcoin"}).sort("timestamp", 1).limit(1000)
         raw_data = list(cursor)
 
         # 2. La magia de Marshmallow: Limpia los ObjectIds y valida los tipos de datos
@@ -72,7 +74,7 @@ def get_recent_bitcoin():
         limit = request.args.get('limit', default=30, type=int)
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_bitcoin.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
+        cursor = collection_prices.find({"asset": "Bitcoin"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -81,7 +83,7 @@ def get_recent_bitcoin():
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
         result = bitcoin_list_schema.dump(raw_data)
 
-        print(result)
+        logger.info(result)
 
         # 3. Respuesta limpia y estructurada
         return jsonify({
@@ -114,7 +116,7 @@ def get_sp500_history():
     try: 
         # 1. Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
         # Ponemos un límite de 1000 por seguridad para no colapsar la memoria de React de golpe
-        cursor = collection_sp500.find({"asset": "S&P 500"}).sort("timestamp", 1).limit(1000)
+        cursor = collection_prices.find({"asset": "S&P 500"}).sort("timestamp", 1).limit(1000)
         raw_data = list(cursor)
 
         # 2. La magia de Marshmallow: Limpia los ObjectIds y valida los tipos de datos
@@ -154,7 +156,7 @@ def get_recent_sp500():
         limit = request.args.get('limit', default=30, type=int)
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_sp500.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
+        cursor = collection_prices.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -163,7 +165,7 @@ def get_recent_sp500():
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
         result = sp500_list_schema.dump(raw_data)
 
-        print(result)
+        logger.info(result)
 
         # 3. Respuesta limpia y estructurada
         return jsonify({
