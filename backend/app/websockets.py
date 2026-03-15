@@ -1,47 +1,57 @@
-import os
-from pymongo import MongoClient
+import json
+from confluent_kafka import Consumer, KafkaError
 from .extensions import socketio
-# Importamos el esquema (asumo que se llama así basándome en el del SP500)
 from .schemas.macro_schema import BitcoinPriceSchema
+from .repositories.mongo_repository import insert_one
+from .utils.logger_setup import get_logger
 
+logger = get_logger("WebSockets")
 
 bitcoin_schema = BitcoinPriceSchema()
 
+KAFKA_CONF = {
+    'bootstrap.servers': 'localhost:9092',
+    'group.id': 'safa-websocket-group',
+    'auto.offset.reset': 'latest'
+}
+TOPIC = 'bitcoin_ticker'
+COLLECTION_NAME = 'prices'
+
+
 def emit_realtime_data():
-    """
-    Esta función corre en un bucle infinito en un hilo separado.
-    Vigila la base de datos y empuja el último precio a React.
-    """
-    mongo_uri = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
-    client = MongoClient(mongo_uri)
-    db = client['safa_macro']
-    collection = db['prices']
+    consumer = Consumer(KAFKA_CONF)
+    consumer.subscribe([TOPIC])
 
-    print("🎙️ Locutor WebSocket iniciado. Vigilando base de datos...")
+    logger.info("WebSocket iniciado. Escuchando Kafka...")
 
-    ultimo_timestamp_enviado = 0
+    try:
+        while True:
+            msg = consumer.poll(1.0)
 
-    while True: 
-        try:
-            cursor = collection.find().sort("timestamp", -1).limit(1)
-            latest_record = list(cursor)
+            if msg is None:
+                socketio.sleep(0)
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    logger.error(f"Error Kafka: {msg.error()}")
+                    continue
 
-            if latest_record:
-                record = latest_record[0]
+            try:
+                data_json = json.loads(msg.value().decode('utf-8'))
 
-                # Solo emitimos si es un dato nuevo (basado en el timestamp)
-                if record['timestamp'] > ultimo_timestamp_enviado:
+                insert_one(COLLECTION_NAME, data_json)
 
-                    # 2. Validacion con Marshmallow
-                    dato_validado = bitcoin_schema.dump(record)
+                dato_validado = bitcoin_schema.dump(data_json)
+                socketio.emit('update_btc', dato_validado)
 
-                    # 3. Emisión por el túnel WebSocket
-                    socketio.emit('update_btc', dato_validado)
-                    
-                    ultimo_timestamp_enviado = record['timestamp']
+                logger.info(f"Emitido y guardado | Precio: {data_json['price']}")
 
-        except Exception as e:
-            print(f"❌ Error en el hilo de WebSockets: {e}")
+            except Exception as e:
+                logger.error(f"Error procesando mensaje: {e}")
 
-        # Dormimos 5 segundos (igualando el ritmo de tu Productor de Kafka)
-        socketio.sleep(5)
+    except Exception as e:
+        logger.error(f"Error en hilo WebSocket: {e}")
+    finally:
+        consumer.close()

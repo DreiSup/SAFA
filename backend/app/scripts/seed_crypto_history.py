@@ -15,7 +15,7 @@ if not MONGO_URI:
 
 
 DB_NAME = 'safa_macro'
-COLLECTION_NAME = 'bitcoin_prices'
+COLLECTION_NAME = 'prices'
 
 # Binance Klines API: BTC/USDT, intervalos de 1 hora, máximo 720 velas (30 días * 24 horas)
 BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=720"

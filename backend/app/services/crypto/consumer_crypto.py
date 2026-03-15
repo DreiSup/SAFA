@@ -18,7 +18,7 @@ load_dotenv()
 
 MONGO_URI=os.getenv('MONGO_URI')
 DB_NAME='safa_macro'
-COLLECTION_NAME = 'bitcoin_prices'
+COLLECTION_NAME = 'prices'
 
 # --- DISCIPLINA: VERIFICACIÓN VISUAL ---
 print(f"🔍 DEBUG: Intentando conectar a Mongo con esta URI: {MONGO_URI}")
