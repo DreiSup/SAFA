@@ -1,8 +1,11 @@
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from pymongo.errors import BulkWriteError
+from app.utils.logger_setup import get_logger 
 
 load_dotenv()
+logger = get_logger("Mongo_Repository")
 
 MONGO_URI=os.getenv('MONGO_URI')
 DB_NAME='safa_macro'
@@ -30,4 +33,9 @@ def insert_many(collection_name, documents):
 
     db = client[DB_NAME]
     collection = db[collection_name]
-    collection.insert_many(documents)
+
+    try:
+        collection.insert_many(documents, ordered=False)
+
+    except BulkWriteError as e:
+        logger.warning(f"Duplicates ignored when inserting in '{collection_name}' : {e.details['nInserted']} inserted")

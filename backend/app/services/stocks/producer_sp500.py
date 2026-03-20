@@ -49,8 +49,8 @@ def run_producer():
         while True:
             # Obtener precio real (Binance API)
             if not is_market_open():
-                print("💤 Wall Street está cerrado. El precio no cambiará. Esperando 60s...")
-                time.sleep(60)
+                print("💤 Wall Street está cerrado. El precio no cambiará. Esperando 300s...")
+                time.sleep(300)
                 continue
 
             try:

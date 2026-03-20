@@ -1,0 +1,83 @@
+========================================
+  ORDEN DE ARRANQUE RECOMENDADO
+========================================
+
+1. docker-compose up -d
+2. cd backend && source venv/bin/activate && python run.py
+3. cd backend && source venv/bin/activate && python -m app.services.producer_news
+4. cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
+5. cd frontend && npm run dev
+
+========================================
+
+
+
+========================================
+  SAFA — SHORTCUTS DE EJECUCIÓN
+========================================
+
+  Todos los comandos se ejecutan desde la raíz del proyecto (/SAFA)
+  salvo que se indique lo contrario.
+
+  IMPORTANTE: activar el entorno virtual antes de cualquier comando de backend:
+    cd backend && source venv/bin/activate
+
+  ----------------------------------------
+    INFRAESTRUCTURA (Docker)
+  ----------------------------------------
+
+  Levantar Kafka + Zookeeper:
+    docker-compose up -d
+
+  Parar Kafka + Zookeeper:
+    docker-compose down
+
+  Ver logs de los contenedores:
+    docker-compose logs -f
+
+  ----------------------------------------
+    BACKEND
+  ----------------------------------------
+
+  Iniciar servidor Flask:
+    cd backend && source venv/bin/activate && python run.py
+
+  Productor de noticias (NewsAPI → Kafka):
+    cd backend && source venv/bin/activate && python -m app.services.producer_news
+
+  Consumer Spark + FinBERT (Kafka → MongoDB):
+    cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
+
+  Productor de crypto (precios → Kafka):
+    cd backend && source venv/bin/activate && python -m app.services.crypto.producer_crypto
+
+  Consumer de crypto (Kafka → MongoDB):
+    cd backend && source venv/bin/activate && python -m app.services.crypto.consumer_crypto
+
+  Productor de SP500 (precios → Kafka):
+    cd backend && source venv/bin/activate && python -m app.services.stocks.producer_sp500
+
+  Consumer de SP500 (Kafka → MongoDB):
+    cd backend && source venv/bin/activate && python -m app.services.stocks.consumer_sp500
+
+  ----------------------------------------
+    SCRIPTS (one-shot)
+  ----------------------------------------
+
+  Seed histórico de crypto en MongoDB:
+    cd backend && source venv/bin/activate && python -m app.scripts.seed_crypto_history
+
+  Seed histórico de SP500 en MongoDB:
+    cd backend && source venv/bin/activate && python -m app.scripts.seed_sp500_history
+
+  Descargar modelo FinBERT localmente:
+    cd backend && source venv/bin/activate && python -m app.scripts.download_finbert
+
+  ----------------------------------------
+    FRONTEND
+  ----------------------------------------
+
+  Iniciar React en modo desarrollo:
+    cd frontend && npm run dev
+
+
