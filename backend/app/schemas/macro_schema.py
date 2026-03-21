@@ -43,4 +43,7 @@ class MacroNewsSchema(Schema):
         validate=validate.OneOf(["bitcoin", "sp500", "general_macro"])
     )
 
+    data_source = fields.String(missing="newsapi")  # "newsapi" | "reddit"
+    impact_score = fields.Float(missing=0.5)        # 0.0–1.0, peso de calidad/alcance
+
 news_validator = MacroNewsSchema()

@@ -2,8 +2,8 @@ import os
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
-from app.schemas.macro_schema import bitcoin_list_schema
 from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema
+from app.repositories.mongo_repository import get_sentiment_summary
 from app.utils.logger_setup import get_logger
 
 logger = get_logger("Macro_routes")
@@ -15,6 +15,35 @@ MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
 collection_prices = db['prices']
+
+
+@macro_bp.route('/sentiment', methods=['GET'])
+def get_sentiment():
+    """ Obtener sentimiento agregado del mercado.
+     ---
+    tags:
+       - Macroeconomia
+    summary: Sentimiento ponderado por calidad/fuente para bitcoin, sp500 y general_macro.
+    responses:
+      200:
+        description: Sentimiento calculado exitosamente.
+      500:
+        description: Error interno del servidor.
+    """
+    try:
+        since_hours = request.args.get('since', default=24, type=int)
+        result = get_sentiment_summary('sentiment_news', since_hours=since_hours)
+        return jsonify({
+            "status": "success",
+            "since_hours": since_hours,
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error al calcular el sentimiento: {str(e)}"
+        }), 500
 
 @macro_bp.route('/bitcoin', methods=['GET'])
 def get_bitcoin_history():

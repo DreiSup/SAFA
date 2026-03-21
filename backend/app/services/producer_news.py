@@ -19,7 +19,12 @@ KAFKA_CONF = {
     'client.id': 'safa-news-producer'
 }
 NEWS_API_KEY = os.getenv('NEWS_API_KEY')
-INTERVAL = 300 # 30 min para no agotar las 100 peticiones diarias 
+INTERVAL = 300 # 5 min entre peticiones
+
+HIGH_QUALITY_SOURCES = {
+    "reuters", "bloomberg", "associated press", "ap news",
+    "bbc news", "financial times", "wall street journal", "the economist"
+}
 
 # Memoria para no enviar noticias repetidas al modelo de IA
 titulares_enviados = set()
@@ -55,8 +60,7 @@ def run_producer():
     # 2. Codificamos la query de forma segura (cambia espacios por %20, etc.)
     query_segura = urllib.parse.quote(query_raw)
 
-    # 🔥 CAMBIO CLAVE: sortBy=popularity
-    url = f"https://newsapi.org/v2/everything?q={query_segura}&language=en&sortBy=popularity&apiKey={NEWS_API_KEY}"
+    url = f"https://newsapi.org/v2/everything?q={query_segura}&language=en&sortBy=publishedAt&apiKey={NEWS_API_KEY}"
 
     try:
         while True:
@@ -87,27 +91,28 @@ def run_producer():
                         else: 
                             target_asset = "general_macro"
                         
+                        source_name = article['source']['name']
+                        impact_score = 0.9 if source_name.lower() in HIGH_QUALITY_SOURCES else 0.5
+
                         mensaje = {
-                            "source": article['source']['name'],
+                            "source": source_name,
                             "title": titulo,
                             "description": article.get('description', ''),
                             "published_at": article['publishedAt'],
-                            "asset_type": "macro" ,
-                            "target": target_asset
+                            "asset_type": "macro",
+                            "target": target_asset,
+                            "data_source": "newsapi",
+                            "impact_score": impact_score
                         }
-                        
+
                         producer.produce(
-                            KAFKA_TOPIC, 
-                            json.dumps(mensaje).encode('utf-8'), 
+                            KAFKA_TOPIC,
+                            json.dumps(mensaje).encode('utf-8'),
                             callback=delivery_report
                         )
-                        
+
                         titulares_enviados.add(titulo)
                         nuevos_enviados += 1
-                        
-                        # 🔥 Si ya encontramos 5 noticias NUEVAS de alto impacto, paramos este lote
-                        if nuevos_enviados >= 5:
-                            break
                     
                     producer.poll(0)
                     logger.info(f"⏳ Lote procesado ({nuevos_enviados} noticias nuevas). Esperando {INTERVAL}s...")
