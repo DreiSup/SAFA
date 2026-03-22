@@ -64,7 +64,7 @@ logger.info("⏳ Conectando Spark a Kafka")
 flujo_kafka = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "localhost:9092") \
-    .option("subscribe", "news_ticker") \
+    .option("subscribe", "news_ticker,reddit_ticker") \
     .option("startingOffsets", "earliest") \
     .load()
 
@@ -102,6 +102,7 @@ def procesar_batch(batch_df, batch_id):
 
     for line in lines:
         data = json.loads(line["json_validado"])
+        data["topic"] = line["topic"]
         original_news.append(data)
         texts.append(data["title"] + "." + data["description"])
 
@@ -119,11 +120,21 @@ def procesar_batch(batch_df, batch_id):
 
     logger.info(f"\n\n\nnewS PARA MONGO: \n\n\n {news_to_mdb}")
 
-    insert_many('sentiment_news' ,news_to_mdb)
+    news_docs = [doc for doc in news_to_mdb if doc["topic"] == "news_ticker"]
+    reddit_docs = [doc for doc in news_to_mdb if doc["topic"] == "reddit_ticker"]
+
+    if news_docs: 
+        for doc in news_docs:
+            doc.pop("topic", None)
+        insert_many('sentiment_news', news_docs)
+    if reddit_docs: 
+        for doc in reddit_docs:
+            doc.pop("topic", None)
+        insert_many('sentiment_reddit', reddit_docs)
 
     
 
-query = flujo_limpio.select("json_validado") \
+query = flujo_limpio.select("json_validado", "topic") \
     .writeStream \
     .foreachBatch(procesar_batch) \
     .start()

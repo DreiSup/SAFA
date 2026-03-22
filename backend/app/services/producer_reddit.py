@@ -8,7 +8,7 @@ from app.utils.logger_setup import get_logger
 logger = get_logger("Producer_Reddit")
 
 # --- CONFIGURACIÓN ---
-KAFKA_TOPIC = 'news_ticker'
+KAFKA_TOPIC = 'reddit_ticker'
 KAFKA_CONF = {
     'bootstrap.servers': 'localhost:9092',
     'client.id': 'safa-reddit-producer'
@@ -18,7 +18,7 @@ HEADERS = {"User-Agent": "SAFA-sentiment-fetcher/1.0 (educational project)"}
 SORT_BY = "hot"
 SUBREDDITS = ['wallstreetbets', 'Bitcoin', 'CryptoCurrency', 'investing']
 POSTS_PER_SUBREDDIT = 10
-INTERVAL = 300  # 5 min
+INTERVAL = 30  # 5 min
 
 titulos_enviados = set()
 MAX_MEMORIA = 200

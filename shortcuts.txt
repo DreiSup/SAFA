@@ -5,8 +5,9 @@
 1. docker-compose up -d
 2. cd backend && source venv/bin/activate && python run.py
 3. cd backend && source venv/bin/activate && python -m app.services.producer_news
-4. cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
-5. cd frontend && npm run dev
+4. cd backend && source venv/bin/activate && python -m app.services.producer_reddit
+5. cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
+6. cd frontend && npm run dev
 
 ========================================
 
@@ -59,6 +60,12 @@
 
   Consumer de SP500 (Kafka → MongoDB):
     cd backend && source venv/bin/activate && python -m app.services.stocks.consumer_sp500
+
+  Productor de Reddit (Reddit → Kafka):
+    cd backend && source venv/bin/activate && python -m app.services.producer_reddit
+
+  Consumer de Reddit (Kafka → MongoDB):
+    cd backend && source venv/bin/activate && python -m app.services.consumer_reddit
 
   ----------------------------------------
     SCRIPTS (one-shot)

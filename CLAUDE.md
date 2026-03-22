@@ -104,10 +104,24 @@ safa/
 - UDF de Marshmallow activa para validación de schemas
 - Pipeline completo: noticias enriquecidas con FinBERT persistidas en MongoDB (`sentiment_news`)
 - Frontend micro casi terminado
+- Gráficas BTC y SP500 visibles en frontend (WebSockets conectados)
+- `producer_reddit.py` creado: fetchea posts de Reddit (wallstreetbets, Bitcoin, CryptoCurrency, investing), clasifica por target y publica en Kafka
+
+### 🔜 Próximo paso inmediato — separar flujos News y Reddit
+Actualmente Reddit publica en el mismo topic `news_ticker` y colección `sentiment_news` que NewsAPI.
+Hay que separarlos para poder compararlos. El plan está diseñado: solo 2 archivos, mínimos cambios.
+
+1. `backend/app/services/producer_reddit.py` línea 11 → `TOPIC = "reddit_ticker"`
+2. `backend/app/schemas/consumer_spark.py`:
+   - `.option("subscribe", "news_ticker,reddit_ticker")` — Spark añade columna `topic` automáticamente
+   - `flujo_limpio.select("json_validado", "topic")` — pasar columna al batch
+   - En `procesar_batch`: separar docs por `line["topic"]` → `insert_many("sentiment_news", ...)` o `insert_many("sentiment_reddit", ...)`
 
 ### ⏳ Pendiente medio plazo
 - Autocategorización de noticias por Embeddings
 - Detección de anomalías en datos financieros
+- Anti-duplicados persistentes en DB (ahora son solo en RAM, se pierden al reiniciar)
+- **Charts BTC y SP500 no funcionan como deben**: solo hay datos de hace ~2 semanas en DB, necesitan ingesta continua casi en tiempo real. Las gráficas se ven pero no reflejan el estado actual del mercado.
 
 ### 🚀 Largo plazo
 - Pipeline RAG + LLM + TTS para generación del reporte de audio diario
