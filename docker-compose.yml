@@ -54,6 +54,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CONNECTIONS_MAX_IDLE_MS: 600000
+      KAFKA_REQUEST_TIMEOUT_MS: 60000
 
   # 5. Kafka UI
   kafka_ui:
@@ -84,6 +86,18 @@ services:
     depends_on:
       - spark-master
 
+  # 6. Qdrant
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: safa_qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+    
+
 volumes:
   postgres_data:
   mongo_data:
+  qdrant_storage:

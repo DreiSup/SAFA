@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType
 import json
+import uuid
 from app.schemas.macro_schema import MacroNewsSchema
 from app.utils.logger_setup import get_logger
 from app.services.finbert.sentiment_analyzer import analizar_sentimiento
@@ -10,6 +11,7 @@ from app.repositories.mongo_repository import insert_many
 
 
 logger = get_logger("Spark_consumer")
+NAMESPACE = uuid.NAMESPACE_URL
 
 
 # 🔥 Obtenemos la versión exacta que 'pip' instaló en tu PC (ej. 3.5.1)
@@ -97,9 +99,6 @@ def procesar_batch(batch_df, batch_id):
     original_news = []
     texts = []
 
-    """ logger.info(f"\n\nnewS ORIGINALES: {original_news}")
-    logger.info(f"\n\ntexts: {texts}") """
-
     for line in lines:
         data = json.loads(line["json_validado"])
         data["topic"] = line["topic"]
@@ -115,8 +114,9 @@ def procesar_batch(batch_df, batch_id):
     news_to_mdb = []
     
     for new, sentimiento in zip(original_news, resp_fin):
-        new.pop("description", None)
-        news_to_mdb.append({**new,"sentiment": sentimiento})
+        doc_id = str(uuid.uuid5(NAMESPACE, f"{new['title']}:{new['source']}"))
+        doc = {"_id": doc_id ,**new,"sentiment": sentimiento, "embedding_done": False}
+        news_to_mdb.append(doc)
 
     logger.info(f"\n\n\nnewS PARA MONGO: \n\n\n {news_to_mdb}")
 

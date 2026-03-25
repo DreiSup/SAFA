@@ -1,9 +1,12 @@
 import json
 import time
 import requests
+import urllib3
 from datetime import datetime, timezone
 from confluent_kafka import Producer
 from app.utils.logger_setup import get_logger
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = get_logger("Producer_Reddit")
 
@@ -18,7 +21,7 @@ HEADERS = {"User-Agent": "SAFA-sentiment-fetcher/1.0 (educational project)"}
 SORT_BY = "hot"
 SUBREDDITS = ['wallstreetbets', 'Bitcoin', 'CryptoCurrency', 'investing']
 POSTS_PER_SUBREDDIT = 10
-INTERVAL = 30  # 5 min
+INTERVAL = 300  # 5 min
 
 titulos_enviados = set()
 MAX_MEMORIA = 200
@@ -51,12 +54,12 @@ def fetch_subreddit(subreddit: str, sort: str = "hot", limit: int = 10) -> list[
     url = f"https://www.reddit.com/r/{subreddit}/{sort}.json?limit={limit}"
 
     try:
-        response = requests.get(url, headers=HEADERS, timeout=10)
+        response = requests.get(url, headers=HEADERS, timeout=10, verify=False)
 
         if response.status_code == 429:
             logger.warning(f"Rate limit en r/{subreddit}. Esperando 60s...")
             time.sleep(60)
-            response = requests.get(url, headers=HEADERS, timeout=10)
+            response = requests.get(url, headers=HEADERS, timeout=10, verify=False)
 
         response.raise_for_status()
         raw_posts = response.json()["data"]["children"]
