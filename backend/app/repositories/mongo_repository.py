@@ -45,6 +45,18 @@ def insert_many(collection_name, documents):
     except BulkWriteError as e:
         logger.warning(f"Duplicates ignored when inserting in '{collection_name}' : {e.details['nInserted']} inserted")
 
+def get_filtered(collection_name, field, filter):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    try:
+        result = collection.find({field: filter})
+        return list(result)
+
+    except Exception as e: 
+        logger.error(f"Something went wrong: {str(e)}")
 
 def get_sentiment_summary(collection_name, since_hours=24):
     from datetime import datetime, timedelta, timezone
@@ -86,3 +98,5 @@ def get_sentiment_summary(collection_name, since_hours=24):
         result[target] = {"score": round(ws, 4), "label": label, "n": g["n"]}
 
     return result
+
+

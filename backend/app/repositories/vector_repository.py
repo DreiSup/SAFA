@@ -1,12 +1,13 @@
-import time                                                      
-from sentence_transformers import SentenceTransformer
-from app.repositories.mongo_repository import find, update_many  # ver nota abajo
-from app.repositories.vector_repository import crear_coleccion, upsert_noticias  
-from app.utils.logger_setup import get_logger 
+import uuid
+from datetime import datetime, timedelta
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, Range
 
 client = QdrantClient(host="localhost", port=6333)
 COLLECTION = "safa_news"
 DIMS = 384
+NAMESPACE = uuid.NAMESPACE_URL
+
 
 def crear_coleccion():
     """Crea la colección si no existe"""
@@ -17,10 +18,11 @@ def crear_coleccion():
             vectors_config=VectorParams(size=DIMS, distance=Distance.COSINE)
         )
 
-def generar_id():
-    """MD5 como UUID - Qdrant requiere formato UUID, No hex raw."""
-    raw = hashlib.md5(f"{titulo}{fuente}".encode()).hexdigest()
-    return str(uuid.UUID(raw))
+
+def generar_id(titulo: str, fuente: str) -> str:
+    """UUID5 determinístico — mismo artículo siempre produce el mismo ID."""
+    return str(uuid.uuid5(NAMESPACE, f"{titulo}:{fuente}"))
+
 
 def upsert_noticias(docs: list, embeddings: list):
     """Inserta o actualiza puntos en Qdrant con deduplicación por ID"""
@@ -30,9 +32,11 @@ def upsert_noticias(docs: list, embeddings: list):
             id=generar_id(doc["title"], doc["source"]),
             vector=vector.tolist(),
             payload={
-                "title": doc["title"] ,
+                "title": doc["title"],
                 "source": doc["source"],
+                "target": doc["target"],
                 "sentiment": doc["sentiment"]["label"],
+                "score_finbert": doc["sentiment"]["score"],
                 "published_at": int(datetime.fromisoformat(doc["published_at"]).timestamp())
                                     if isinstance(doc["published_at"], str)
                                     else int(doc["published_at"].timestamp()),
@@ -40,6 +44,7 @@ def upsert_noticias(docs: list, embeddings: list):
             }
         ))
     client.upsert(collection_name=COLLECTION, points=puntos)
+
 
 def buscar_noticias(query_vector: list, target: str, dias: int = 3, k: int = 8):
     """Búsqueda semántica con filtro temporal y por activo"""

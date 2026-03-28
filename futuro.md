@@ -37,8 +37,8 @@ NewsAPI / Reddit
 embedding_worker.py [NUEVO SERVICIO]
   └─> Lee MongoDB sin embedding → genera embedding → escribe en Qdrant
 
-app/repositories/vector_repository.py [NUEVO]
-  └─> CRUD Qdrant: crear colección, upsert (con dedup MD5), search (con filtro temporal)
+app/repositories/vector_repository.py [✅ IMPLEMENTADO — revisar pendientes abajo]
+  └─> CRUD Qdrant: crear colección, upsert (con dedup UUID5), search (con filtro temporal)
 
 app/services/report_generator.py [NUEVO]
   ├─ MongoDB prices → detecta movimiento significativo del día
@@ -56,12 +56,13 @@ GET /api/v1/macro/report [NUEVO ENDPOINT en macro_routes.py]
 
 | Archivo | Cambio |
 |---|---|
-| `docker-compose.yml` | Añadir servicio Qdrant en puerto 6333 con volumen persistente |
-| `app/repositories/vector_repository.py` | [NUEVO] CRUD Qdrant |
-| `app/services/embedding_worker.py` | [NUEVO] Servicio independiente de embeddings |
-| `app/services/report_generator.py` | [NUEVO] Lógica RAG completa |
-| `app/routes/macro_routes.py` | Añadir endpoint `/api/v1/macro/report` |
-| `requirements.txt` | Añadir `qdrant-client`, `sentence-transformers` |
+| `docker-compose.yml` | ✅ Qdrant añadido en puerto 6333 con volumen persistente |
+| `app/repositories/vector_repository.py` | ✅ CRUD Qdrant implementado (pendiente: corregir generar_id a UUID5 + añadir imports) |
+| `app/schemas/consumer_spark.py` | ⏳ Añadir `_id` UUID5 + flag `embedding_done: False` antes de insert_many |
+| `app/services/embedding_worker.py` | ⏳ Servicio independiente de embeddings |
+| `app/services/report_generator.py` | ⏳ Lógica RAG completa |
+| `app/routes/macro_routes.py` | ⏳ Añadir endpoint `/api/v1/macro/report` |
+| `requirements.txt` | ⏳ Añadir `qdrant-client`, `sentence-transformers`, `anthropic` |
 
 ---
 
@@ -89,13 +90,14 @@ def encode_en_batches(modelo, textos, batch_size=32):
 - Payload: `title, source, target, sentiment, score_finbert, published_at`
 - Métrica de similitud: cosine
 
-**Deduplicación OBLIGATORIA** — usar hash MD5 como ID del punto en Qdrant.
-Sin esto, Reuters, Bloomberg y Yahoo publican la misma noticia y el top-K devuelve el mismo artículo 3 veces:
+**Deduplicación OBLIGATORIA** — usar UUID5 como ID del punto en Qdrant (y como `_id` en MongoDB).
+UUID5 es determinístico, formato UUID nativo, y más robusto que MD5:
 
 ```python
-import hashlib
+import uuid
+NAMESPACE = uuid.NAMESPACE_URL
 def generar_id(titulo: str, fuente: str) -> str:
-    return hashlib.md5(f"{titulo}{fuente}".encode()).hexdigest()
+    return str(uuid.uuid5(NAMESPACE, f"{titulo}:{fuente}"))
 ```
 
 **Filtro temporal OBLIGATORIO** en todas las búsquedas.
