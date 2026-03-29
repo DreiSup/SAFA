@@ -17,7 +17,7 @@ const BitcoinRealTime = () => {
           if (json.status === "success" && json.data.length > 0) {
             //Formateamos datos igual que en Websocket
             const initialData = json.data.map((item: { price: number; timestamp: number }) => ({
-              time: new Date(item.timestamp * 1000).toLocaleDateString("es-ES"),
+              time: new Date(item.timestamp * 1000).toLocaleTimeString("es-ES"),
               price: item.price
             }))
 

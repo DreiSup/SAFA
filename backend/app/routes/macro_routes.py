@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
@@ -98,12 +99,18 @@ def get_recent_bitcoin():
         description: Error interno del servidor.
           """
     
-    try: 
+    try:
 
         limit = request.args.get('limit', default=30, type=int)
+        today = request.args.get('today', default=False, type=lambda v: v == 'true')
+
+        query = {"asset": "Bitcoin"}
+        if today:
+            start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            query["timestamp"] = {"$gte": start_of_day}
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_prices.find({"asset": "Bitcoin"}).sort("timestamp", -1).limit(limit)
+        cursor = collection_prices.find(query).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -180,12 +187,18 @@ def get_recent_sp500():
         description: Error interno del servidor.
           """
     
-    try: 
+    try:
 
         limit = request.args.get('limit', default=30, type=int)
+        today = request.args.get('today', default=False, type=lambda v: v == 'true')
+
+        query = {"asset": "S&P 500"}
+        if today:
+            start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            query["timestamp"] = {"$gte": start_of_day}
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_prices.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
+        cursor = collection_prices.find(query).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der

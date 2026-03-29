@@ -1,5 +1,6 @@
 import apiClient from "./axiosClient"
 
+
 const api = apiClient
 
 export interface DashboardData {
@@ -93,7 +94,7 @@ export const financeService = {
 
     getRecentBitcoin: async (limit: number = 90): Promise<PriceListResponse> => {
         try {
-            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit } })
+            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit, today: true } })
             return response.data;
         } catch (error) {
             console.error("Error en getRecentBitcoin:", error);
@@ -103,7 +104,7 @@ export const financeService = {
 
     getRecentSP500: async (limit: number = 90): Promise<PriceListResponse> => {
         try {
-            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit } })
+            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit, today: true } })
             return response.data;
         } catch (error) {
             console.error("Error en getRecentSP500:", error);
