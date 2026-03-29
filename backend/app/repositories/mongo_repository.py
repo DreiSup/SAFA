@@ -19,33 +19,9 @@ def get_client():
 
     return _client
 
+# --------------------------- GET ------------------------------
 
-def insert_one(collection_name, document):
-    client = get_client()
-
-    db = client[DB_NAME]
-    collection = db[collection_name]
-
-    try:
-        return collection.insert_one(document)
-    
-    except DuplicateKeyError as e:
-        logger.warning(f"Duplicate ignored when inserting in '{collection_name}'")
-
-
-def insert_many(collection_name, documents):
-    client = get_client()
-
-    db = client[DB_NAME]
-    collection = db[collection_name]
-
-    try:
-        collection.insert_many(documents, ordered=False)
-
-    except BulkWriteError as e:
-        logger.warning(f"Duplicates ignored when inserting in '{collection_name}' : {e.details['nInserted']} inserted")
-
-def get_filtered(collection_name, field, filter):
+def get_filtered(collection_name, field, filter, limit=None):
     client = get_client()
 
     db = client[DB_NAME]
@@ -53,6 +29,8 @@ def get_filtered(collection_name, field, filter):
 
     try:
         result = collection.find({field: filter})
+        if limit:
+            result = result.limit(limit)
         return list(result)
 
     except Exception as e: 
@@ -100,3 +78,46 @@ def get_sentiment_summary(collection_name, since_hours=24):
     return result
 
 
+# --------------------------- POST ------------------------------
+def insert_one(collection_name, document):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    try:
+        return collection.insert_one(document)
+    
+    except DuplicateKeyError as e:
+        logger.warning(f"Duplicate ignored when inserting in '{collection_name}'")
+
+
+def insert_many(collection_name, documents):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    try:
+        collection.insert_many(documents, ordered=False)
+
+    except BulkWriteError as e:
+        logger.warning(f"Duplicates ignored when inserting in '{collection_name}' : {e.details['nInserted']} inserted")
+
+
+
+# --------------------------- PUT/PATCH ------------------------------
+
+def update_many(collection_name, filter_query, update_data):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    try:
+        result = collection.update_many(filter_query, update_data)
+        logger.info(f"Updated {result.modified_count} documents in '{collection_name}'")
+        return True
+    
+    except Exception as e: 
+        logger.error(f"Something went wrong: {str(e)}")
