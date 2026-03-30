@@ -29,6 +29,39 @@ class SP500PriceSchema(Schema):
 sp500_list_schema = SP500PriceSchema(many=True)
 
 
+class CandleSchema(Schema):
+    """
+    Esquema para velas OHLCV completas.
+    Campos comunes: BTC y S&P 500.
+    Campos opcionales BTC (Binance): quote_volume, trades, taker_buy_volume, taker_buy_quote_volume.
+    Campos opcionales SP500 (yfinance): dividends, stock_splits.
+    """
+    # --- Campos comunes ---
+    asset = fields.Str(required=True)
+    symbol = fields.Str(required=True)
+    interval = fields.Str(required=True)
+    open = fields.Float(required=True)
+    high = fields.Float(required=True)
+    low = fields.Float(required=True)
+    close = fields.Float(required=True)
+    volume = fields.Float(required=True)
+    timestamp_open = fields.Float(required=True)
+    timestamp_close = fields.Float(required=True)
+    source = fields.Str()
+
+    # --- Campos exclusivos de Binance (BTC) ---
+    quote_volume = fields.Float(load_default=None)          # Volumen en USD durante la vela
+    trades = fields.Int(load_default=None)                  # Número de operaciones ejecutadas
+    taker_buy_volume = fields.Float(load_default=None)      # BTC comprado por takers (market orders)
+    taker_buy_quote_volume = fields.Float(load_default=None) # USD gastado por takers
+
+    # --- Campos exclusivos de yfinance (SP500) ---
+    dividends = fields.Float(load_default=None)             # Dividendo por acción en ese período
+    stock_splits = fields.Float(load_default=None)          # Ratio de split (0 si no hubo split)
+
+candle_list_schema = CandleSchema(many=True)
+
+
 class MacroNewsSchema(Schema):
     # Definimos campos exactos y tipos de datos
     source = fields.String(required=True, validate=validate.Length(min=1))

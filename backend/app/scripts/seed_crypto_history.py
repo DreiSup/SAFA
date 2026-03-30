@@ -15,7 +15,7 @@ if not MONGO_URI:
 
 
 DB_NAME = 'safa_macro'
-COLLECTION_NAME = 'prices'
+COLLECTION_NAME = 'prices_candles'
 
 # Binance Klines API: BTC/USDT, intervalos de 1 hora, máximo 720 velas (30 días * 24 horas)
 BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=720"
@@ -27,22 +27,33 @@ def seed_historical_data():
     db = client[DB_NAME]
     collection = db[COLLECTION_NAME]
 
-    try: 
+    try:
         response = requests.get(BINANCE_KLINES_URL)
         response.raise_for_status()
         klines = response.json()
 
         historical_docs = []
 
-        # 3. Formatear los datos
-        # Binance devuelve un array puro. El índice 4 es el precio de Cierre (Close)
-        # El índice 6 es el tiempo de cierre (Close time) en milisegundos
+        # Binance devuelve arrays de 12 elementos por vela:
+        # [0] open_time (ms)  [1] open  [2] high  [3] low  [4] close  [5] volume (BTC)
+        # [6] close_time (ms) [7] quote_volume (USD)  [8] trades
+        # [9] taker_buy_volume (BTC)  [10] taker_buy_quote_volume (USD)  [11] ignorado
         for kline in klines:
             doc = {
                 "asset": "Bitcoin",
                 "symbol": "BTC/USDT",
-                "price": float(kline[4]),           # Precio de cierre
-                "timestamp": float(kline[6]) / 1000.0, # Convertir ms a segundos
+                "interval": "1h",
+                "open": float(kline[1]),
+                "high": float(kline[2]),
+                "low": float(kline[3]),
+                "close": float(kline[4]),
+                "volume": float(kline[5]),
+                "timestamp_open": float(kline[0]) / 1000.0,
+                "timestamp_close": float(kline[6]) / 1000.0,
+                "quote_volume": float(kline[7]),
+                "trades": int(kline[8]),
+                "taker_buy_volume": float(kline[9]),
+                "taker_buy_quote_volume": float(kline[10]),
                 "source": "Binance Historical 1h"
             }
             historical_docs.append(doc)
@@ -50,14 +61,15 @@ def seed_historical_data():
         # 4. Inserción Inteligente (Bulk Upsert)
         if historical_docs:
             print(f"🔄 Procesando {len(historical_docs)} registros. Evitando duplicados...")
-            
+
             # Preparamos una lista de operaciones
             operations = []
             for doc in historical_docs:
-                # Definimos la regla: Buscar por Símbolo y Timestamp
+                # Clave única: símbolo + intervalo + timestamp de apertura de la vela
                 filtro_busqueda = {
-                    "symbol": doc["symbol"], 
-                    "timestamp": doc["timestamp"]
+                    "symbol": doc["symbol"],
+                    "interval": doc["interval"],
+                    "timestamp_open": doc["timestamp_open"]
                 }
                 
                 # UpdateOne(filtro, datos_nuevos, upsert=True)

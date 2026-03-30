@@ -3,6 +3,7 @@ import { io } from "socket.io-client"
 import { Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { financeService } from "@/services/financeService"
+import type { Candle } from "@/services/financeService"
 
 const BitcoinRealTime = () => {
 
@@ -13,45 +14,43 @@ const BitcoinRealTime = () => {
 
       const fetchDataInicial = async () => {
         try {
-          const json = await financeService.getRecentBitcoin(90)
+          // Cargamos velas OHLCV históricas (últimas 720 = 30 días)
+          const json = await financeService.getBitcoinCandles(720)
           if (json.status === "success" && json.data.length > 0) {
-            //Formateamos datos igual que en Websocket
-            const initialData = json.data.map((item: { price: number; timestamp: number }) => ({
-              time: new Date(item.timestamp * 1000).toLocaleTimeString("es-ES"),
-              price: item.price
+            // Cada vela tiene open/high/low/close — mostramos el precio de cierre
+            const initialData = json.data.map((candle: Candle) => ({
+              time: new Date(candle.timestamp_open * 1000).toLocaleDateString("es-ES"),
+              price: candle.close
             }))
 
             setData(initialData)
             setPrecioActual(initialData[initialData.length - 1].price)
           }
         } catch (error) {
-          console.error("Algo ha ido mal al cargar datos iniciales de BTC", error)
+          console.error("Algo ha ido mal al cargar velas iniciales de BTC", error)
         }
       }
 
       fetchDataInicial()
 
-      // 1. Opcional: Cargar los últimos 50 puntos vía REST para no empezar con la gráfica en blanco
-      // fetch("http://localhost:5000/api/v1/macro/bitcoin?limit=50")...
-
-      // 2. Encender el túnel
+      // Encender el túnel WebSocket para ticks en tiempo real
       const socket = io("http://localhost:5000")
 
       socket.on("update_btc", (nuevoDato) => {
         const date = new Date(nuevoDato.timestamp * 1000)
-        const horaFormateada = date.toLocaleTimeString("es-ES") 
-        
+        const horaFormateada = date.toLocaleTimeString("es-ES")
+
         const nuevoPunto = {
           time: horaFormateada,
           price: nuevoDato.price
         }
-        
+
         setPrecioActual(nuevoDato.price)
 
-        // Actualizamos la gráfica manteniendo solo los últimos 20 puntos para que fluya
+        // Mantenemos los últimos 200 puntos (velas históricas + ticks recientes)
         setData((prevData) => {
           const newData = [...prevData, nuevoPunto]
-          if (newData.length > 20) newData.shift() // Borra el más antiguo
+          if (newData.length > 200) newData.shift()
           return newData
         })
       })

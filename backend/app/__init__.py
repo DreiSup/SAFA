@@ -51,7 +51,8 @@ def create_app():
     app.register_blueprint(finance_bp)
 
 
-    from .websockets import emit_realtime_data
-    socketio.start_background_task(emit_realtime_data)
+    from .websockets import emit_realtime_data_btc, emit_realtime_data_sp500
+    socketio.start_background_task(emit_realtime_data_btc)
+    socketio.start_background_task(emit_realtime_data_sp500)
 
     return app

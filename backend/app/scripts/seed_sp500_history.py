@@ -7,13 +7,13 @@ import pandas as pd
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection = db['prices'] # <-- Nueva colección
+collection = db['prices_candles']
 
 def seed_sp500():
     print("Iniciando descarga de datos históricos del S&P500...")
 
     try:
-        # 1. Descargar datos de Yahoo Finance (Último mes, intervalo diario o de 1 hora)
+        # 1. Descargar datos de Yahoo Finance (Último mes, intervalo de 1 hora)
         # ^GSPC es el símbolo del S&P 500 en Yahoo
         sp500 = yf.Ticker("^GSPC")
 
@@ -23,18 +23,27 @@ def seed_sp500():
         if hist.empty:
             print("No se han encontrado datos. Algo ha ido mal.")
             return
-        
-        # 2. Formatear los datos para que coincidan con nuestra arquitectura
+
+        # 2. Formatear los datos en formato OHLCV
+        # hist.iterrows() devuelve (index=datetime, row=Series con Open/High/Low/Close/Volume)
         historical_docs = []
         for index, row in hist.iterrows():
-            # Convertimos el índice (fecha) a timestamp Unix (segundos)
-            timestamp = int(index.timestamp())
+            timestamp_open = float(index.timestamp())
+            timestamp_close = timestamp_open + 3600.0  # 1h en segundos
 
             doc = {
                 "asset": "S&P 500",
                 "symbol": "^GSPC",
-                "price": float(row['Close']),
-                "timestamp": timestamp,
+                "interval": "1h",
+                "open": float(row['Open']),
+                "high": float(row['High']),
+                "low": float(row['Low']),
+                "close": float(row['Close']),
+                "volume": float(row['Volume']),
+                "timestamp_open": timestamp_open,
+                "timestamp_close": timestamp_close,
+                "dividends": float(row.get('Dividends', 0.0)),
+                "stock_splits": float(row.get('Stock Splits', 0.0)),
                 "source": "Yahoo Finance"
             }
             historical_docs.append(doc)
@@ -43,11 +52,12 @@ def seed_sp500():
         if historical_docs:
             print(f"🔄 Procesando {len(historical_docs)} registros del SP500...")
             operations = []
-            
+
             for doc in historical_docs:
                 filtro_busqueda = {
-                    "symbol": doc["symbol"], 
-                    "timestamp": doc["timestamp"]
+                    "symbol": doc["symbol"],
+                    "interval": doc["interval"],
+                    "timestamp_open": doc["timestamp_open"]
                 }
                 
                 operacion = UpdateOne(

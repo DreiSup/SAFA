@@ -78,6 +78,21 @@ def get_sentiment_summary(collection_name, since_hours=24):
     return result
 
 
+# --------------------------- INDEXES ------------------------------
+
+def ensure_ttl_index(collection_name, field, expire_after_seconds):
+    client = get_client()
+    db = client[DB_NAME]
+    collection = db[collection_name]
+    # create_index es idempotente: si el índice ya existe, no hace nada
+    collection.create_index(
+        [(field, 1)],
+        expireAfterSeconds=expire_after_seconds,
+        background=True
+    )
+    logger.info(f"TTL index asegurado en '{collection_name}'.'{field}' ({expire_after_seconds}s)")
+
+
 # --------------------------- POST ------------------------------
 def insert_one(collection_name, document):
     client = get_client()

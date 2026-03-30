@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts"
+import { CartesianGrid, Area, AreaChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
      ChartContainer,
      ChartTooltip,
      ChartTooltipContent,
-    type ChartConfig 
+    type ChartConfig
 } from "@/components/ui/chart"
+import { financeService } from "@/services/financeService"
 
 
 const chartConfig = {
@@ -29,40 +30,28 @@ const Chart = () => {
     useEffect(() => {
         const fetchMarketData = async () => {
         try {
-            // Promise,all ejecuta ambas peticiones en paralelo
-            const [btcResponse, sp500Response] = await Promise.all([
-                fetch("http://localhost:5000/api/v1/macro/bitcoin"),
-                fetch("http://localhost:5000/api/v1/macro/sp500")
+            // Promise.all ejecuta ambas peticiones en paralelo
+            const [btcJson, sp500Json] = await Promise.all([
+                financeService.getBitcoinCandles(720),
+                financeService.getSP500Candles(720)
             ])
 
-            const btcJson = await btcResponse.json()
-            const sp500Json = await sp500Response.json()
-            
             if (btcJson.status === "success" && sp500Json.status === "success") {
-                //Creamos un diccionario para agrupar los datos por fecha
+                // Agrupamos por fecha usando timestamp_open de la vela
                 const mergedDataMap = new Map()
 
-                //Procesamos Bitcoin
-                btcJson.data.forEach((item: any) => {
-                    const date = new Date(item.timestamp * 1000)
-                    const dateKey = date.toLocaleDateString("es-Es", { month: "short", day: "numeric"})
-                    mergedDataMap.set(dateKey, { formattedDate: dateKey, btc: item.price })
+                btcJson.data.forEach((candle) => {
+                    const dateKey = new Date(candle.timestamp_open * 1000).toLocaleDateString("es-ES", { month: "short", day: "numeric" })
+                    mergedDataMap.set(dateKey, { formattedDate: dateKey, btc: candle.close })
                 })
 
-                // Procesamos S&P 500 y lo fusionamos con el Bitcoin en la misma fecha
-                sp500Json.data.forEach((item: any) => {
-                    const date = new Date(item.timestamp * 1000)
-                    const dateKey = date.toLocaleDateString("es-ES", { month: "short", day: "numeric" })
-                    
+                sp500Json.data.forEach((candle) => {
+                    const dateKey = new Date(candle.timestamp_open * 1000).toLocaleDateString("es-ES", { month: "short", day: "numeric" })
                     if (mergedDataMap.has(dateKey)) {
-                        // Si ya existe la fecha (por el BTC), le añadimos el precio del SP500
-                        const existing = mergedDataMap.get(dateKey)
-                        existing.sp500 = item.price
-                        mergedDataMap.set(dateKey, existing)
+                        mergedDataMap.get(dateKey).sp500 = candle.close
                     }
                 })
 
-                // Convertimos el mapa de vuelta a un array para Recharts
                 setData(Array.from(mergedDataMap.values()))
             }
         } catch (error) {

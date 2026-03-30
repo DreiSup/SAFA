@@ -31,6 +31,24 @@ export interface PriceListResponse {
     status: string;
     data: PricePoint[];
 }
+export interface Candle {
+    asset: string;
+    symbol: string;
+    interval: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    timestamp_open: number;
+    timestamp_close: number;
+    source: string;
+}
+export interface CandleListResponse {
+    status: string;
+    count: number;
+    data: Candle[];
+}
 
 export const financeService = {
 
@@ -94,7 +112,7 @@ export const financeService = {
 
     getRecentBitcoin: async (limit: number = 90): Promise<PriceListResponse> => {
         try {
-            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit, today: true } })
+            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit } })
             return response.data;
         } catch (error) {
             console.error("Error en getRecentBitcoin:", error);
@@ -104,10 +122,30 @@ export const financeService = {
 
     getRecentSP500: async (limit: number = 90): Promise<PriceListResponse> => {
         try {
-            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit, today: true } })
+            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit } })
             return response.data;
         } catch (error) {
             console.error("Error en getRecentSP500:", error);
+            throw error;
+        }
+    },
+
+    getBitcoinCandles: async (limit: number = 720): Promise<CandleListResponse> => {
+        try {
+            const response = await api.get<CandleListResponse>('/v1/macro/bitcoin/candles', { params: { limit } })
+            return response.data;
+        } catch (error) {
+            console.error("Error en getBitcoinCandles:", error);
+            throw error;
+        }
+    },
+
+    getSP500Candles: async (limit: number = 720): Promise<CandleListResponse> => {
+        try {
+            const response = await api.get<CandleListResponse>('/v1/macro/sp500/candles', { params: { limit } })
+            return response.data;
+        } catch (error) {
+            console.error("Error en getSP500Candles:", error);
             throw error;
         }
     }
