@@ -28,6 +28,17 @@ class SP500PriceSchema(Schema):
 
 sp500_list_schema = SP500PriceSchema(many=True)
 
+class PriceTickSchema(Schema):
+    """
+    Esquema para serializar los datos de los precios de todo tipo de activo. El Schema es genérico
+    """
+    asset_class = fields.Str(required=True, validate=validate.OneOf(["crypto", "stock", "fund"]))
+    symbol = fields.Str(required=True, metadata={"description": "Ticker de WS"})
+    price = fields.Float(required=True, metadata={"description": "Precio de cierre"})
+    timestamp = fields.Float(required=True, metadata={"description": "Marca de tiempo en segundos (Unix)"})
+    source = fields.Str(metadata={"description": "Origen de los datos (ej. binance.ws o alpace.ws)"})
+
+price_tick_schema = PriceTickSchema()
 
 class CandleSchema(Schema):
     """

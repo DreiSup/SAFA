@@ -92,6 +92,18 @@ def ensure_ttl_index(collection_name, field, expire_after_seconds):
     )
     logger.info(f"TTL index asegurado en '{collection_name}'.'{field}' ({expire_after_seconds}s)")
 
+def ensure_candle_index(collection_name='prices_candles'):
+    client = get_client()
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    collection.create_index(
+        [("symbol", 1), ("interval", 1), ("timestamp_open", 1)],
+        unique=True,
+        background=True
+    )
+    logger.info(f"Candle index asegurado en '{collection_name}' {{symbol, interval, timestamp_open}}")
+
 
 # --------------------------- POST ------------------------------
 def insert_one(collection_name, document):
@@ -136,3 +148,18 @@ def update_many(collection_name, filter_query, update_data):
     
     except Exception as e: 
         logger.error(f"Something went wrong: {str(e)}")
+
+def upsert_candle(collection_name, candle_doc):
+    client = get_client()
+
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    try: 
+        collection.update_one(
+            filter={"symbol": candle_doc["symbol"], "interval": candle_doc["interval"], "timestamp_open": candle_doc["timestamp_open"]},
+            update={"$set": candle_doc},
+            upsert=True
+        )
+    except Exception as e: 
+        logger.error(f"Something went wrong calling 'upsert_candle' function: {str(e)}")
