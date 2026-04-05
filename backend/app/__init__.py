@@ -50,9 +50,9 @@ def create_app():
     from .routes.finance import finance_bp
     app.register_blueprint(finance_bp)
 
-
-    from .websockets import emit_realtime_data_btc, emit_realtime_data_sp500
-    socketio.start_background_task(emit_realtime_data_btc)
-    socketio.start_background_task(emit_realtime_data_sp500)
+    from .websockets import emit_real_time_price, init_websockets
+    init_websockets()
+    socketio.start_background_task(emit_real_time_price, 'crypto_prices', 'update_btc')
+    socketio.start_background_task(emit_real_time_price, 'stock_prices', 'update_sp500')
 
     return app

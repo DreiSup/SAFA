@@ -53,6 +53,9 @@
   Productor de crypto (precios → Kafka):
     cd backend && source venv/bin/activate && python -m app.services.crypto.producer_crypto
 
+  [NUEVO] Productor BTC WebSocket real (Binance WS → Kafka: crypto_prices):
+    cd backend && source venv/bin/activate && python -m app.services.crypto.producer_binance_ws
+
   Consumer de crypto (Kafka → MongoDB):
     cd backend && source venv/bin/activate && python -m app.services.crypto.consumer_crypto
 
