@@ -45,7 +45,7 @@ def on_message(ws, message):
         logger.error(f"Error en on_message: {e}")
 
 def on_error(ws, error):
-    logger.error(f"Websockets error: {error}")
+    logger.error(f"Websockets error: {type(error).__name__}: {error}")
 
 def on_close(ws, close_status_code, close_msg):
     logger.warning(f"Websockets cerrado: {close_status_code} - {close_msg}")

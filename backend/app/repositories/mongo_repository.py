@@ -5,7 +5,7 @@ from pymongo.errors import BulkWriteError, DuplicateKeyError
 from app.utils.logger_setup import get_logger 
 
 load_dotenv()
-logger = get_logger("Mongo_Repository")
+logger = get_logger(__name__)
 
 MONGO_URI=os.getenv('MONGO_URI')
 DB_NAME='safa_macro'

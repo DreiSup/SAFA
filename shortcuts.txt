@@ -8,7 +8,8 @@
 4. cd backend && source venv/bin/activate && python -m app.services.producer_reddit
 5. cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
 6. cd backend && source venv/bin/activate && python -m app.services.encoding_worker
-7. cd frontend && npm run dev
+7. cd backend && source venv/bin/activate && python -m app.services.crypto.producer_binance_ws
+8. cd frontend && npm run dev
 
 ========================================
 

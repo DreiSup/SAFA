@@ -1,11 +1,11 @@
 import os
-from datetime import datetime, timezone
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
-from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema, candle_list_schema
+from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema
 from app.repositories.mongo_repository import get_sentiment_summary
 from app.utils.logger_setup import get_logger
+from datetime import datetime, timezone
 
 logger = get_logger("Macro_routes")
 
@@ -15,9 +15,7 @@ macro_bp = Blueprint('macro', __name__, url_prefix='/api/v1/macro')
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection_prices = db['prices']       # colección legacy (no borrar hasta migrar)
-collection_ticks = db['prices_ticks']  # ticks en tiempo real (TTL 48h)
-collection_candles = db['prices_candles']  # velas OHLCV históricas
+collection_prices = db['prices']
 
 
 @macro_bp.route('/sentiment', methods=['GET'])
@@ -101,18 +99,12 @@ def get_recent_bitcoin():
         description: Error interno del servidor.
           """
     
-    try:
+    try: 
 
         limit = request.args.get('limit', default=30, type=int)
-        today = request.args.get('today', default=False, type=lambda v: v == 'true')
 
-        query = {"asset": "Bitcoin"}
-        if today:
-            start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
-            query["timestamp"] = {"$gte": start_of_day}
-
-        # Consultar prices_ticks (datos en tiempo real, TTL 48h)
-        cursor = collection_ticks.find(query).sort("timestamp", -1).limit(limit)
+        # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
+        cursor = collection_prices.find({"asset": "Bitcoin"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -129,7 +121,7 @@ def get_recent_bitcoin():
             "data": result
         }), 200
 
-    except Exception as e:
+    except Exception as e: 
         return jsonify({
             "status": "error",
             "message": f"Error al obtener los datos: {str(e)}"
@@ -189,18 +181,12 @@ def get_recent_sp500():
         description: Error interno del servidor.
           """
     
-    try:
+    try: 
 
         limit = request.args.get('limit', default=30, type=int)
-        today = request.args.get('today', default=False, type=lambda v: v == 'true')
 
-        query = {"asset": "S&P 500"}
-        if today:
-            start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
-            query["timestamp"] = {"$gte": start_of_day}
-
-        # Consultar prices_ticks (datos en tiempo real, TTL 48h)
-        cursor = collection_ticks.find(query).sort("timestamp", -1).limit(limit)
+        # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
+        cursor = collection_prices.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -217,68 +203,8 @@ def get_recent_sp500():
             "data": result
         }), 200
 
-    except Exception as e:
+    except Exception as e: 
         return jsonify({
             "status": "error",
             "message": f"Error al obtener los datos: {str(e)}"
         }), 500
-
-
-@macro_bp.route('/bitcoin/candles', methods=['GET'])
-def get_bitcoin_candles():
-    """ Obtener velas OHLCV de Bitcoin desde prices_candles.
-     ---
-    tags:
-       - Macroeconomia
-    summary: Devuelve velas históricas OHLCV de Bitcoin.
-    responses:
-      200:
-        description: Lista de velas devuelta exitosamente.
-      500:
-        description: Error interno del servidor.
-    """
-    try:
-        limit = request.args.get('limit', default=720, type=int)  # 720 = 30 días de velas 1h
-
-        cursor = collection_candles.find(
-            {"asset": "Bitcoin"},
-            {"_id": 0}
-        ).sort("timestamp_open", 1).limit(limit)
-
-        raw_data = list(cursor)
-        result = candle_list_schema.dump(raw_data)
-
-        return jsonify({"status": "success", "count": len(result), "data": result}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@macro_bp.route('/sp500/candles', methods=['GET'])
-def get_sp500_candles():
-    """ Obtener velas OHLCV del S&P500 desde prices_candles.
-     ---
-    tags:
-       - Macroeconomia
-    summary: Devuelve velas históricas OHLCV del S&P500.
-    responses:
-      200:
-        description: Lista de velas devuelta exitosamente.
-      500:
-        description: Error interno del servidor.
-    """
-    try:
-        limit = request.args.get('limit', default=720, type=int)
-
-        cursor = collection_candles.find(
-            {"asset": "S&P 500"},
-            {"_id": 0}
-        ).sort("timestamp_open", 1).limit(limit)
-
-        raw_data = list(cursor)
-        result = candle_list_schema.dump(raw_data)
-
-        return jsonify({"status": "success", "count": len(result), "data": result}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
