@@ -42,13 +42,13 @@ def on_message(ws, message):
         producer.poll(0)
         """ logger.info(f"Tick enviado: {tick['price']}") """
     except Exception as e:
-        logger.error(f"Error en on_message: {e}")
+        logger.error(f"(Binance) Error en on_message: {e}")
 
 def on_error(ws, error):
-    logger.error(f"Websockets error: {type(error).__name__}: {error}")
+    logger.error(f"Binance Websockets error: {type(error).__name__}: {error}")
 
 def on_close(ws, close_status_code, close_msg):
-    logger.warning(f"Websockets cerrado: {close_status_code} - {close_msg}")
+    logger.warning(f"Binance Websockets cerrado: {close_status_code} - {close_msg}")
 
 
 #FUNCION DE CONEXION CON BACKOFF
@@ -65,7 +65,7 @@ def connect():
             )
             ws.run_forever()
         except Exception as e:
-            logger.error(f"Error inesperado en WebSocketApp: {e}")
+            logger.error(f"Error inesperado en (Binance) WebSocketApp: {e}")
 
         logger.warning(f"Reconectando en {backoff}s...")
         time.sleep(backoff)

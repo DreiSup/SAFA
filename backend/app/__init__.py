@@ -34,7 +34,7 @@ def create_app():
 
     Swagger(app, config=swagger_config, template=swagger_template)
 
-    # Crear tablas automáticamente (Solo desarrollo)
+    # Crear tablas automáticamente si no existen, SQLAlchemy (Solo desarrollo)
     with app.app_context():
         db.create_all()
 
@@ -43,7 +43,7 @@ def create_app():
     from .routes.core import core_bp
     app.register_blueprint(core_bp)
 
-    from app.routes.macro_routes import macro_bp
+    from .routes.macro_routes import macro_bp
     app.register_blueprint(macro_bp)
     
     # Aquí registraremos finance_bp
@@ -54,5 +54,11 @@ def create_app():
     init_websockets()
     socketio.start_background_task(emit_real_time_price, 'crypto_prices', 'update_btc')
     socketio.start_background_task(emit_real_time_price, 'stock_prices', 'update_sp500')
+
+    # Archivo candle_scheduler, cada 1h y 1d agrega la candle correspondiente a la db
+    from .repositories.mongo_repository import ensure_candle_index
+    from .scripts.candle_scheduler import init_scheduler
+    ensure_candle_index()
+    init_scheduler()
 
     return app
