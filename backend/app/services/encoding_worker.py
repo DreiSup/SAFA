@@ -9,7 +9,7 @@ logger = get_logger("encondding_worker")
 
 
 MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-INTERVAL = 30
+INTERVAL = 300
 
 
 def run_encodder():

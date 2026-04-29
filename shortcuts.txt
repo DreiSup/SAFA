@@ -3,13 +3,14 @@
 ========================================
 
 1. docker-compose up -d
-2. cd backend && source venv/bin/activate && python run.py
+2. cd backend && source venv/bin/activate && python run.py          # Flask + APScheduler (candles automáticos)
 3. cd backend && source venv/bin/activate && python -m app.services.producer_news
 4. cd backend && source venv/bin/activate && python -m app.services.producer_reddit
 5. cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
 6. cd backend && source venv/bin/activate && python -m app.services.encoding_worker
 7. cd backend && source venv/bin/activate && python -m app.services.crypto.producer_binance_ws
-8. cd frontend && npm run dev
+8. cd backend && source venv/bin/activate && python -m app.services.stocks.producer_alpaca     # solo en horario de mercado (L-V 15:30-22:00 CET)
+9. cd frontend && npm run dev
 
 ========================================
 
@@ -42,38 +43,26 @@
     BACKEND
   ----------------------------------------
 
-  Iniciar servidor Flask:
+  Iniciar servidor Flask (incluye APScheduler con candles automáticos):
     cd backend && source venv/bin/activate && python run.py
 
-  Productor de noticias (NewsAPI → Kafka):
+  Productor de noticias (NewsAPI → Kafka: news_ticker):
     cd backend && source venv/bin/activate && python -m app.services.producer_news
 
-  Consumer Spark + FinBERT (Kafka → MongoDB):
-    cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
-
-  Productor de crypto (precios → Kafka):
-    cd backend && source venv/bin/activate && python -m app.services.crypto.producer_crypto
-
-  [NUEVO] Productor BTC WebSocket real (Binance WS → Kafka: crypto_prices):
-    cd backend && source venv/bin/activate && python -m app.services.crypto.producer_binance_ws
-
-  Consumer de crypto (Kafka → MongoDB):
-    cd backend && source venv/bin/activate && python -m app.services.crypto.consumer_crypto
-
-  Productor de SP500 (precios → Kafka):
-    cd backend && source venv/bin/activate && python -m app.services.stocks.producer_sp500
-
-  Consumer de SP500 (Kafka → MongoDB):
-    cd backend && source venv/bin/activate && python -m app.services.stocks.consumer_sp500
-
-  Productor de Reddit (Reddit → Kafka):
+  Productor de Reddit (Reddit → Kafka: reddit_ticker):
     cd backend && source venv/bin/activate && python -m app.services.producer_reddit
 
-  Consumer de Reddit (Kafka → MongoDB):
-    cd backend && source venv/bin/activate && python -m app.services.consumer_reddit
+  Consumer Spark + FinBERT (Kafka: news_ticker + reddit_ticker → MongoDB):
+    cd backend && source venv/bin/activate && python -m app.schemas.consumer_spark
 
-  Encoding worker (MongoDB → Qdrant, cada 5 min):
+  Encoding worker (MongoDB → Qdrant, polling cada 30s):
     cd backend && source venv/bin/activate && python -m app.services.encoding_worker
+
+  Productor BTC WebSocket (Binance WS → Kafka: crypto_prices):
+    cd backend && source venv/bin/activate && python -m app.services.crypto.producer_binance_ws
+
+  Productor SP500 WebSocket (Alpaca WS → Kafka: stock_prices) [solo L-V 15:30-22:00 CET]:
+    cd backend && source venv/bin/activate && python -m app.services.stocks.producer_alpaca
 
   ----------------------------------------
     SCRIPTS (one-shot)

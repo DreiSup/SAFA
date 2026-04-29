@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 # Importamos los esquemas de Marshmallow
-from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema
+from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema, candle_list_schema
 from app.repositories.mongo_repository import get_sentiment_summary
 from app.utils.logger_setup import get_logger
 from datetime import datetime, timezone
@@ -16,6 +16,7 @@ MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
 collection_prices = db['prices']
+collection_candles = db['prices_candles']
 
 
 @macro_bp.route('/sentiment', methods=['GET'])
@@ -46,7 +47,7 @@ def get_sentiment():
             "message": f"Error al calcular el sentimiento: {str(e)}"
         }), 500
 
-@macro_bp.route('/bitcoin', methods=['GET'])
+@macro_bp.route('/btc', methods=['GET'])
 def get_bitcoin_history():
     """ Obtener histórico de precios de Bitcoin.
      ---
@@ -84,7 +85,7 @@ def get_bitcoin_history():
         }), 500
     
 
-@macro_bp.route('/bitcoin/recent', methods=['GET'])
+@macro_bp.route('/btc/recent', methods=['GET'])
 def get_recent_bitcoin():
     """ Obtener precios recientes de Bitcoin.
      ---
@@ -126,6 +127,44 @@ def get_recent_bitcoin():
             "status": "error",
             "message": f"Error al obtener los datos: {str(e)}"
         }), 500
+    
+@macro_bp.route('/btc/candles', methods=['GET'])
+def getBTCCandles():
+
+    """ Obtener precios recientes de BTC.
+        ---
+        tags: 
+        - Macroeconomia
+        summary: Devuelve candles de BTC, 30 velas por defecto.
+        description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+        responses:
+        200:
+            description: Lista de precios de BTC devuelta exitosamente.
+        500:
+            description: Error interno del servidor.
+            """
+    try:
+
+        limit = request.args.get('limit', default=30, type=int)
+
+        cursor = collection_candles.find({"symbol": "BTCUSDT"}).sort("timestamp_open", 1).limit(limit)
+        raw_data = list(cursor)
+
+        print("RAW DATAAAA:", raw_data)
+
+        # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
+        result = candle_list_schema.dump(raw_data)
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener datos: {str(e)}"
+        })
 
 
 @macro_bp.route('/sp500', methods=['GET'])
@@ -179,7 +218,7 @@ def get_recent_sp500():
         description: Lista de precios de SP500 devuelta exitosamente.
       500:
         description: Error interno del servidor.
-          """
+    """
     
     try: 
 
@@ -208,3 +247,39 @@ def get_recent_sp500():
             "status": "error",
             "message": f"Error al obtener los datos: {str(e)}"
         }), 500
+    
+@macro_bp.route('/sp500/candles', methods=['GET'])
+def getSP500Candles():
+
+    """ Obtener precios recientes de SP500.
+        ---
+        tags: 
+        - Macroeconomia
+        summary: Devuelve candles de SP500, 30 velas por defecto.
+        description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+        responses:
+        200:
+            description: Lista de precios de SP500 devuelta exitosamente.
+        500:
+            description: Error interno del servidor.
+            """
+    try:
+
+        limit = request.args.get('limit', default=30, type=int)
+
+        cursor = collection_candles.find({"symbol": "SPY"}).sort("timestamp_open", 1).limit(limit)
+        raw_data = list(cursor)
+
+        # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
+        result = candle_list_schema.dump(raw_data)
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener datos: {str(e)}"
+        })

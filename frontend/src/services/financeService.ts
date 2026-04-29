@@ -112,7 +112,7 @@ export const financeService = {
 
     getRecentBitcoin: async (limit: number = 90): Promise<PriceListResponse> => {
         try {
-            const response = await api.get<PriceListResponse>('/v1/macro/bitcoin/recent', { params: { limit } })
+            const response = await api.get<PriceListResponse>('/v1/macro/btc/recent', { params: { limit } })
             return response.data;
         } catch (error) {
             console.error("Error en getRecentBitcoin:", error);
@@ -129,10 +129,10 @@ export const financeService = {
             throw error;
         }
     },
-
+    
     getBitcoinCandles: async (limit: number = 720): Promise<CandleListResponse> => {
         try {
-            const response = await api.get<CandleListResponse>('/v1/macro/bitcoin/candles', { params: { limit } })
+            const response = await api.get<CandleListResponse>('/v1/macro/btc/candles', { params: { limit } })
             return response.data;
         } catch (error) {
             console.error("Error en getBitcoinCandles:", error);

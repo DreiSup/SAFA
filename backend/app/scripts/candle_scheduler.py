@@ -45,9 +45,9 @@ def fetch_and_store_candle(symbol, interval, asset_name):
 def init_scheduler():
     scheduler = BackgroundScheduler()
 
+    scheduler.add_job(fetch_and_store_candle, "cron", second=1, args=["BTCUSDT", "1m", "Bitcoin"])
     scheduler.add_job(fetch_and_store_candle, "cron", minute=1, args=["BTCUSDT", "1h", "Bitcoin"])
     scheduler.add_job(fetch_and_store_candle, "cron", hour=0, minute=1, args=["BTCUSDT", "1d", "Bitcoin"])
-    scheduler.add_job(fetch_and_store_candle, "cron", second=1, args=["BTCUSDT", "1m", "Bitcoin"])
     
     scheduler.start()
     logger.info("candle_scheduler iniciado")
