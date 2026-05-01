@@ -4,6 +4,7 @@ from .extensions import socketio
 from .schemas.macro_schema import price_tick_schema
 from .repositories.mongo_repository import insert_one, ensure_ttl_index
 from .utils.logger_setup import get_logger
+from datetime import datetime, timezone
 
 logger = get_logger("WebSockets")
 
@@ -41,6 +42,7 @@ def emit_real_time_price(topic, event_name):
                 data_json = json.loads(msg.value().decode('utf-8'))
                 dato_validado = price_tick_schema.dump(data_json)
                 socketio.emit(event_name, dato_validado)
+                dato_validado['created_at'] = datetime.now(timezone.utc)
                 insert_one(COLLECTION_TICKS, dato_validado)
                 """ logger.info(f"[{event_name}] Precio emitido: {data_json['price']}") """
 
@@ -53,4 +55,4 @@ def emit_real_time_price(topic, event_name):
         consumer.close()
 
 def init_websockets():
-    ensure_ttl_index(COLLECTION_TICKS, 'timestamp', TTL_SECONDS)
+    ensure_ttl_index(COLLECTION_TICKS, 'created_at', TTL_SECONDS)
