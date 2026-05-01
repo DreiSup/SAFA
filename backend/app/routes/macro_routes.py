@@ -1,7 +1,7 @@
 import os
+import time
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
-# Importamos los esquemas de Marshmallow
 from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema, candle_list_schema
 from app.repositories.mongo_repository import get_sentiment_summary
 from app.utils.logger_setup import get_logger
@@ -17,6 +17,7 @@ client = MongoClient(MONGO_URI)
 db = client['safa_macro']
 collection_prices = db['prices']
 collection_candles = db['prices_candles']
+collection_ticks = db['prices_ticks']
 
 
 @macro_bp.route('/sentiment', methods=['GET'])
@@ -146,11 +147,13 @@ def getBTCCandles():
     try:
 
         limit = request.args.get('limit', default=30, type=int)
+        interval = request.args.get('interval', default='1h')
 
-        cursor = collection_candles.find({"symbol": "BTCUSDT"}).sort("timestamp_open", 1).limit(limit)
+        cursor = collection_candles.find(
+            {"symbol": "BTCUSDT", "interval": interval}
+        ).sort("timestamp_open", 1).limit(limit)
+
         raw_data = list(cursor)
-
-        print("RAW DATAAAA:", raw_data)
 
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
         result = candle_list_schema.dump(raw_data)
@@ -225,7 +228,10 @@ def get_recent_sp500():
         limit = request.args.get('limit', default=30, type=int)
 
         # Consultar Mongo: Buscamos todo, ordenado por timestamp (1 = ascendente, más antiguo primero)
-        cursor = collection_prices.find({"asset": "S&P 500"}).sort("timestamp", -1).limit(limit)
+        cursor = collection_prices.find(
+            {"asset": "S&P 500"}
+        ).sort("timestamp", -1).limit(limit)
+
         raw_data = list(cursor)
 
         # Invertimos data para que el grafico pinte de izq a der
@@ -266,8 +272,12 @@ def getSP500Candles():
     try:
 
         limit = request.args.get('limit', default=30, type=int)
+        interval = request.args.get('interval', default='1h')
 
-        cursor = collection_candles.find({"symbol": "SPY"}).sort("timestamp_open", 1).limit(limit)
+        cursor = collection_candles.find(
+            {"symbol": "SPY", "interval": interval}
+        ).sort("timestamp_open", 1).limit(limit)
+
         raw_data = list(cursor)
 
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos

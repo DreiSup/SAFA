@@ -61,7 +61,7 @@ def on_message(ws, message):
                 }
                 producer.produce(TOPIC, json.dumps(tick).encode("utf-8"), callback=on_delivery)
                 producer.poll(0)
-                logger.info(f"Tick enviado: {tick['price']}")
+                """ logger.info(f"Tick enviado: {tick['price']}") """
             else:
                 logger.warning(f"Mensaje no manejado a Alpaca:{msg}")
     except Exception as e:

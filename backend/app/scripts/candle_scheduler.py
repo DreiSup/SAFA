@@ -1,13 +1,57 @@
+import os
+from dotenv import load_dotenv
 import requests
 from datetime import datetime
 from app.utils.logger_setup import get_logger 
 from app.repositories.mongo_repository import upsert_candle
 from apscheduler.schedulers.background import BackgroundScheduler 
 
+load_dotenv()
 
 logger = get_logger(__name__)
 
-def fetch_and_store_candle(symbol, interval, asset_name):
+headers = {     
+      "APCA-API-KEY-ID": os.getenv("ALPACA_API_KEY"),                                                              
+      "APCA-API-SECRET-KEY": os.getenv("ALPACA_SECRET_KEY"),
+  } 
+
+INTERVAL_TO_ALPACA = {"1h": "1Hour", "1d": "1Day"}
+
+def fetch_and_store_sp500_candle(symbol, interval, asset_name):
+    logger.info(f"Iniciando descarga de candle {symbol} {interval} \n Se ha ejecutado a las {datetime.now()}")
+
+    alpaca_interval = INTERVAL_TO_ALPACA[interval]
+    try:
+        alpaca_url=f"https://data.alpaca.markets/v2/stocks/SPY/bars?timeframe={alpaca_interval}&limit=1"
+        response = requests.get(alpaca_url, headers=headers)
+        response.raise_for_status()
+        kline = response.json()["bars"][0]
+
+        logger.info(f"KLINE: {kline}")
+
+        doc = {
+            "asset": asset_name,
+            "symbol": "SPY",
+            "interval": interval,
+            "open": float(kline["o"]),
+            "high": float(kline["h"]),
+            "low": float(kline["l"]),
+            "close": float(kline["c"]),
+            "volume": float(kline["v"]),
+            "timestamp_open": datetime.fromisoformat(kline["t"].replace("Z", "+00:00")).timestamp(),
+            "trades": int(kline["n"]),
+            "source": f"Alpaca Historical {interval}"
+        }
+
+        upsert_candle("prices_candles", doc)    
+        logger.info(f"DOC: {doc}")
+
+
+    except Exception as e:
+        logger.error(f"Error al intentar hacer fetch de SP500 candle {symbol} {interval}: {str(e)}")
+
+
+def fetch_and_store_btc_candle(symbol, interval, asset_name):
     logger.info(f"Iniciando descarga de candle {symbol} {interval} \n Se ha ejecutado a las {datetime.now()}")
 
     try:
@@ -38,16 +82,19 @@ def fetch_and_store_candle(symbol, interval, asset_name):
         logger.info(f"Candle {symbol} {interval}, close:{doc['close']}, guardada correctamente")
 
     except Exception as e:
-        logger.error(f"Error al intentar hacer fetch de candle {symbol} {interval}: {str(e)}")
+        logger.error(f"Error al intentar hacer fetch de BTC candle {symbol} {interval}: {str(e)}")
 
 
 
 def init_scheduler():
     scheduler = BackgroundScheduler()
 
-    scheduler.add_job(fetch_and_store_candle, "cron", second=1, args=["BTCUSDT", "1m", "Bitcoin"])
-    scheduler.add_job(fetch_and_store_candle, "cron", minute=1, args=["BTCUSDT", "1h", "Bitcoin"])
-    scheduler.add_job(fetch_and_store_candle, "cron", hour=0, minute=1, args=["BTCUSDT", "1d", "Bitcoin"])
+    #anteriormente eliminadas las velas de 1m, se utiliza prices_ticks
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", minute=1, args=["BTCUSDT", "1h", "Bitcoin"])
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", hour=0, minute=1, args=["BTCUSDT", "1d", "Bitcoin"])
+
+    scheduler.add_job(fetch_and_store_sp500_candle, "cron",  minute=1, args=["SPY", "1h", "SP500"])
+    scheduler.add_job(fetch_and_store_sp500_candle, "cron", hour=0, minute=1, args=["SPY", "1d", "SP500"])
     
     scheduler.start()
     logger.info("candle_scheduler iniciado")

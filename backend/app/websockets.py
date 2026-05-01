@@ -23,23 +23,25 @@ def emit_real_time_price(topic, event_name):
 
     try:
         while True:
-            msg = consumer.poll(1.0)
+            msg = consumer.poll(0.05)
 
             if msg is None:
                 socketio.sleep(0)
                 continue
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
+                    socketio.sleep(0)
                     continue
                 else:
                     logger.error(f"Error Kafka [{topic}]: {msg.error()}")
+                    socketio.sleep(0)
                     continue
             
             try: 
                 data_json = json.loads(msg.value().decode('utf-8'))
                 dato_validado = price_tick_schema.dump(data_json)
-                insert_one(COLLECTION_TICKS, dato_validado)
                 socketio.emit(event_name, dato_validado)
+                insert_one(COLLECTION_TICKS, dato_validado)
                 """ logger.info(f"[{event_name}] Precio emitido: {data_json['price']}") """
 
             except Exception as e:
