@@ -47,7 +47,7 @@ const BitcoinRealTime = () => {
   useEffect(() => {
     const fetchDataInicial = async () => {
       try {
-        const json = await financeService.getBitcoinCandles(720)
+        const json = await financeService.getBitcoinCandles(720, "1h")
         if (json.status === "success" && json.data.length > 0) {
           const candles: Candle[] = json.data
           const chartData = candles.map(c => ({

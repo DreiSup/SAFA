@@ -2,7 +2,7 @@ import os
 import time
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
-from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema, candle_list_schema
+from app.schemas.macro_schema import bitcoin_list_schema, sp500_list_schema, candle_list_schema, price_tick_schema
 from app.repositories.mongo_repository import get_sentiment_summary
 from app.utils.logger_setup import get_logger
 from datetime import datetime, timezone
@@ -15,7 +15,6 @@ macro_bp = Blueprint('macro', __name__, url_prefix='/api/v1/macro')
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://ysst:ysst@localhost:27020/')
 client = MongoClient(MONGO_URI)
 db = client['safa_macro']
-collection_prices = db['prices']
 collection_candles = db['prices_candles']
 collection_ticks = db['prices_ticks']
 
@@ -86,8 +85,51 @@ def getBTCCandles():
         return jsonify({
             "status": "error",
             "message": f"Error al obtener datos: {str(e)}"
-        })
+        }), 500
     
+@macro_bp.route('/btc/ticks', methods=['GET'])
+def getBTCTicks():
+    """ Obtener ticks de precios recientes de BTC.
+        ---
+        tags: 
+        - Macroeconomia
+        summary: Devuelve ticks de BTC, 30 ticks por defecto.
+        description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+        responses:
+        200:
+            description: Lista de precios de BTC devuelta exitosamente.
+        500:
+            description: Error interno del servidor.
+    """
+
+    try:
+        #cambiar límite a futuro
+        limit = request.args.get('limit', default=30, type=int)
+        
+        cursor = collection_ticks.find(
+            {"symbol": "BTCUSDT"}
+        ).sort("timestamp", 1).limit(limit)
+
+        raw_data = list(cursor)
+
+        logger.info(f"RAW DATA: {raw_data}")
+
+        result = price_tick_schema.dump(raw_data)
+
+        """ logger.info(f"RESULT: {raw_data}") """
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener datos: {str(e)}"
+        }), 500
+
+
 @macro_bp.route('/sp500/candles', methods=['GET'])
 def getSP500Candles():
 
@@ -126,4 +168,42 @@ def getSP500Candles():
         return jsonify({
             "status": "error",
             "message": f"Error al obtener datos: {str(e)}"
-        })
+        }), 500
+    
+@macro_bp.route('/sp500/ticks', methods=['GET'])
+def getSP500Ticks():
+    """ Obtener ticks de precios recientes de SP500.
+        ---
+        tags: 
+        - Macroeconomia
+        summary: Devuelve ticks de SP500, 30 ticks por defecto.
+        description: Extrae los datos de MongoDB, los valida con Marshmallow y los sirve para renderizar gráficos.
+        responses:
+        200:
+            description: Lista de precios de BTC devuelta exitosamente.
+        500:
+            description: Error interno del servidor.
+    """
+
+    try:
+        #cambiar límite a futuro
+        limit = request.args.get('limit', default=30, type=int)
+        
+        cursor = collection_ticks.find(
+            {"symbol": "SPY"}
+        ).sort("timestamp", 1).limit(limit)
+
+        raw_data = list(cursor)
+
+        result = price_tick_schema.dump(raw_data)
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error al obtener datos: {str(e)}"
+        }), 500

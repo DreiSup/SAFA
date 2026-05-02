@@ -20,11 +20,14 @@ ALPACA_HEADERS = {
     "APCA-API-SECRET-KEY": os.getenv("ALPACA_SECRET_KEY"),
 }
 
-INTERVAL_TO_ALPACA = {"1h": "1Hour", "1d": "1Day"}
+INTERVAL_TO_ALPACA = {"1m": "1Min", "1h": "1Hour", "1d": "1Day"}
+INTERVAL_DURATION = {"1m": 60, "1h": 3600, "1d": 86400}
 
 JOBS = [
+    {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1m", "limit": 1000},  # últimas ~16h
     {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1h", "limit": 168},   # última semana
     {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1d", "limit": 30},    # último mes
+    {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1m", "limit": 390},   # último día de mercado (~6.5h)
     {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1h", "limit": 130},   # ~1 mes de horas de mercado
     {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1d", "limit": 30},    # último mes
 ]
@@ -74,6 +77,7 @@ def fetch_alpaca_bars(symbol, interval, limit):
 
 def alpaca_bar_to_doc(bar, symbol, interval, asset):
     ts_open = datetime.fromisoformat(bar["t"].replace("Z", "+00:00")).timestamp()
+    ts_close = ts_open + INTERVAL_DURATION[interval] - 0.001
     return {
         "asset": asset,
         "symbol": symbol,
@@ -84,6 +88,7 @@ def alpaca_bar_to_doc(bar, symbol, interval, asset):
         "close": float(bar["c"]),
         "volume": float(bar["v"]),
         "timestamp_open": ts_open,
+        "timestamp_close": ts_close,
         "trades": int(bar["n"]),
         "source": f"Alpaca Seed {interval}",
     }

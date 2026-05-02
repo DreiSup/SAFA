@@ -48,7 +48,7 @@ const SP500RealTime = () => {
   useEffect(() => {
     const fetchDataInicial = async () => {
       try {
-        const json = await financeService.getSP500Candles(720)
+        const json = await financeService.getSP500Candles(720, "1h")
         if (json.status === "success" && json.data.length > 0) {
           const candles: Candle[] = json.data
           const chartData = candles.map(c => ({

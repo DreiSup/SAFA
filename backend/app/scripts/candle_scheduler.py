@@ -15,7 +15,8 @@ headers = {
       "APCA-API-SECRET-KEY": os.getenv("ALPACA_SECRET_KEY"),
   } 
 
-INTERVAL_TO_ALPACA = {"1h": "1Hour", "1d": "1Day"}
+INTERVAL_TO_ALPACA = {"1m": "1Min","1h": "1Hour", "1d": "1Day"}
+INTERVAL_DURATION = {"1m": 60, "1h": 3600, "1d": 86400}
 
 def fetch_and_store_sp500_candle(symbol, interval, asset_name):
     logger.info(f"Iniciando descarga de candle {symbol} {interval} \n Se ha ejecutado a las {datetime.now()}")
@@ -29,6 +30,10 @@ def fetch_and_store_sp500_candle(symbol, interval, asset_name):
 
         logger.info(f"KLINE: {kline}")
 
+        timestamp_open = datetime.fromisoformat(kline["t"].replace("Z", "+00:00")).timestamp()
+
+        timestamp_close = timestamp_open + INTERVAL_DURATION[interval] - 0.001
+
         doc = {
             "asset": asset_name,
             "symbol": "SPY",
@@ -38,7 +43,8 @@ def fetch_and_store_sp500_candle(symbol, interval, asset_name):
             "low": float(kline["l"]),
             "close": float(kline["c"]),
             "volume": float(kline["v"]),
-            "timestamp_open": datetime.fromisoformat(kline["t"].replace("Z", "+00:00")).timestamp(),
+            "timestamp_open": timestamp_open,
+            "timestamp_close": timestamp_close,
             "trades": int(kline["n"]),
             "source": f"Alpaca Historical {interval}"
         }
@@ -90,9 +96,11 @@ def init_scheduler():
     scheduler = BackgroundScheduler()
 
     #anteriormente eliminadas las velas de 1m, se utiliza prices_ticks
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", second=1, args=["BTCUSDT", "1m", "Bitcoin"])
     scheduler.add_job(fetch_and_store_btc_candle, "cron", minute=1, args=["BTCUSDT", "1h", "Bitcoin"])
     scheduler.add_job(fetch_and_store_btc_candle, "cron", hour=0, minute=1, args=["BTCUSDT", "1d", "Bitcoin"])
 
+    scheduler.add_job(fetch_and_store_sp500_candle, "cron",  second=1, args=["SPY", "1m", "SP500"])
     scheduler.add_job(fetch_and_store_sp500_candle, "cron",  minute=1, args=["SPY", "1h", "SP500"])
     scheduler.add_job(fetch_and_store_sp500_candle, "cron", hour=0, minute=1, args=["SPY", "1d", "SP500"])
     

@@ -38,7 +38,7 @@ class PriceTickSchema(Schema):
     timestamp = fields.Float(required=True, metadata={"description": "Marca de tiempo en segundos (Unix)"})
     source = fields.Str(metadata={"description": "Origen de los datos (ej. binance.ws o alpace.ws)"})
 
-price_tick_schema = PriceTickSchema()
+price_tick_schema = PriceTickSchema(many=True)
 
 class CandleSchema(Schema):
     """
@@ -57,7 +57,7 @@ class CandleSchema(Schema):
     close = fields.Float(required=True)
     volume = fields.Float(required=True)
     timestamp_open = fields.Float(required=True)
-    timestamp_close = fields.Float(required=True)
+    timestamp_close = fields.Float()
     source = fields.Str()
 
     # --- Campos exclusivos de Binance (BTC) ---

@@ -109,30 +109,10 @@ export const financeService = {
             throw error;
         }
     },
-
-    getRecentBitcoin: async (limit: number = 90): Promise<PriceListResponse> => {
-        try {
-            const response = await api.get<PriceListResponse>('/v1/macro/btc/recent', { params: { limit } })
-            return response.data;
-        } catch (error) {
-            console.error("Error en getRecentBitcoin:", error);
-            throw error;
-        }
-    },
-
-    getRecentSP500: async (limit: number = 90): Promise<PriceListResponse> => {
-        try {
-            const response = await api.get<PriceListResponse>('/v1/macro/sp500/recent', { params: { limit } })
-            return response.data;
-        } catch (error) {
-            console.error("Error en getRecentSP500:", error);
-            throw error;
-        }
-    },
     
-    getBitcoinCandles: async (limit: number = 720): Promise<CandleListResponse> => {
+    getBitcoinCandles: async (limit: number = 720, interval: string): Promise<CandleListResponse> => {
         try {
-            const response = await api.get<CandleListResponse>('/v1/macro/btc/candles', { params: { limit } })
+            const response = await api.get<CandleListResponse>('/v1/macro/btc/candles', { params: { limit, interval } })
             return response.data;
         } catch (error) {
             console.error("Error en getBitcoinCandles:", error);
@@ -140,9 +120,9 @@ export const financeService = {
         }
     },
 
-    getSP500Candles: async (limit: number = 720): Promise<CandleListResponse> => {
+    getSP500Candles: async (limit: number = 720, interval: string): Promise<CandleListResponse> => {
         try {
-            const response = await api.get<CandleListResponse>('/v1/macro/sp500/candles', { params: { limit } })
+            const response = await api.get<CandleListResponse>('/v1/macro/sp500/candles', { params: { limit, interval } })
             return response.data;
         } catch (error) {
             console.error("Error en getSP500Candles:", error);
