@@ -65,6 +65,8 @@ const Chart = () => {
 
   return (
     <>
+    <h1 className="font-jetbrains">KL MI REY, como va todo</h1>
+    <h1>KL MI REY, como va todo</h1>
         <Card className="w-full">
         <CardHeader>
             <CardTitle>Mercado Macro: Riesgo vs Tradición</CardTitle>

@@ -69,9 +69,10 @@ def getBTCCandles():
 
         cursor = collection_candles.find(
             {"symbol": "BTCUSDT", "interval": interval}
-        ).sort("timestamp_open", 1).limit(limit)
+        ).sort("timestamp_open", -1).limit(limit)
 
         raw_data = list(cursor)
+        raw_data.reverse()
 
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
         result = candle_list_schema.dump(raw_data)
@@ -108,9 +109,10 @@ def getBTCTicks():
         
         cursor = collection_ticks.find(
             {"symbol": "BTCUSDT"}
-        ).sort("timestamp", 1).limit(limit)
+        ).sort("timestamp", -1).limit(limit)
 
         raw_data = list(cursor)
+        raw_data.reverse()
 
         logger.info(f"RAW DATA: {raw_data}")
 
@@ -152,9 +154,10 @@ def getSP500Candles():
 
         cursor = collection_candles.find(
             {"symbol": "SPY", "interval": interval}
-        ).sort("timestamp_open", 1).limit(limit)
+        ).sort("timestamp_open", -1).limit(limit)
 
         raw_data = list(cursor)
+        raw_data.reverse()
 
         # Marshmallow: Limpia los ObjectIds y valida los tipos de datos
         result = candle_list_schema.dump(raw_data)
@@ -191,9 +194,10 @@ def getSP500Ticks():
         
         cursor = collection_ticks.find(
             {"symbol": "SPY"}
-        ).sort("timestamp", 1).limit(limit)
+        ).sort("timestamp", -1).limit(limit)
 
         raw_data = list(cursor)
+        raw_data.reverse()
 
         result = price_tick_schema.dump(raw_data)
 

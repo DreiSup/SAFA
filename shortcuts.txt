@@ -14,7 +14,8 @@
 
 ========================================
 
-
+ ----- TESTS -----
+cd backend && source venv/bin/activate && pytest tests/test_macro_routes.py -v 
 
 ========================================
   SAFA — SHORTCUTS DE EJECUCIÓN
