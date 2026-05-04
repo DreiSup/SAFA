@@ -20,6 +20,7 @@ def test_btc_candles_response_structure():
 
 def test_btc_candles_fields():
     r = requests.get(f"{BASE_URL}/api/v1/macro/btc/candles?limit=1")
+    print(r.json)
     candle = r.json()["data"][0]
     assert CANDLE_FIELDS.issubset(candle.keys())
 

@@ -65,7 +65,7 @@ const Chart = () => {
 
   return (
     <>
-    <h1 className="font-jetbrains">KL MI REY, como va todo</h1>
+    <h1 className="italic">KL MI REY, como va todo</h1>
     <h1>KL MI REY, como va todo</h1>
         <Card className="w-full">
         <CardHeader>

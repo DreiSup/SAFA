@@ -7,7 +7,7 @@ from app.utils.logger_setup import get_logger
 logger = get_logger("producer_binance_ws")
 
 TOPIC="crypto_prices"
-WS_URL="wss://stream.binance.com:9443/ws/btcusdt@aggTrade"
+WS_URL="wss://stream.binance.com:9443/ws/btceur@aggTrade"
 
 KAFKA_CONFIG = {
     "bootstrap.servers" : "localhost:9092",

@@ -15,7 +15,9 @@
 ========================================
 
  ----- TESTS -----
-cd backend && source venv/bin/activate && pytest tests/test_macro_routes.py -v 
+cd backend && source venv/bin/activate && pytest tests/test_macro_routes.py -v
+cd backend && source venv/bin/activate && pytest tests/test_micro_routes.py -v
+cd backend && source venv/bin/activate && python -m app.services.producer_mock      # envía posts mock a Kafka (reddit_ticker) para testear consumer_spark
 
 ========================================
   SAFA — SHORTCUTS DE EJECUCIÓN
@@ -74,6 +76,12 @@ cd backend && source venv/bin/activate && pytest tests/test_macro_routes.py -v
 
   Seed histórico de SP500 en MongoDB:
     cd backend && source venv/bin/activate && python -m app.scripts.seed_sp500_history
+
+  Seed de velas OHLCV en MongoDB (BTC + SP500, múltiples intervalos):
+    cd backend && source venv/bin/activate && python -m app.scripts.seed_candles
+
+  Fetch manual de posts Reddit → reddit_posts.json (debug/utilidad):
+    cd backend && source venv/bin/activate && python -m app.scripts.reddit_fetcher
 
   Descargar modelo FinBERT localmente:
     cd backend && source venv/bin/activate && python -m app.scripts.download_finbert

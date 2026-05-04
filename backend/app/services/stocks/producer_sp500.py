@@ -13,7 +13,7 @@ KAFKA_CONF = {
     'bootstrap.servers': 'localhost:9092', # Kafka en Docker
     'client.id': 'safa-sp500-producer'
 }
-API_URL = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
+API_URL = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCEUR'
 
 # --- DISCIPLINA DE LÍMITES ---
 INTERVAL = 60     # Segundos entre peticiones normales (Más relajado)

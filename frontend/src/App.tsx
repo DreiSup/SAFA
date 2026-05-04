@@ -6,6 +6,7 @@ import ShadcnCopy from './shadcnCopy';
 import Chart from './pages/Chart';
 import BitcoinRealTime from './pages/BitcoinRealTime';
 import SP500RealTime from './pages/SP500RealTime';
+import Test from './pages/Test';
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
         <Route path='/chart/btc' element={<BitcoinRealTime/>}/>
         <Route path='/chart/sp500' element={<SP500RealTime/>}/>
         <Route path='/shadcn' element={<ShadcnCopy/>}/>
+        <Route path='/test' element={<Test/>}/>
 
         <Route path='/*' element={<NotFound/>}/>
       </Routes>

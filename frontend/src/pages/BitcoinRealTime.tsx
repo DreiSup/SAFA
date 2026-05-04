@@ -93,7 +93,7 @@ const BitcoinRealTime = () => {
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-zinc-100">₿ Bitcoin</span>
               <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
-                BTC/USDT
+                BTT/EUR
               </span>
               {isLive && (
                 <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-400">

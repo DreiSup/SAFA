@@ -17,8 +17,8 @@ if not MONGO_URI:
 DB_NAME = 'safa_macro'
 COLLECTION_NAME = 'prices_candles'
 
-# Binance Klines API: BTC/USDT, intervalos de 1 hora, máximo 720 velas (30 días * 24 horas)
-BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=720"
+# Binance Klines API: BTC/EUR, intervalos de 1 hora, máximo 720 velas (30 días * 24 horas)
+BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines?symbol=BTCEUR&interval=1h&limit=720"
 
 def seed_historical_data():
     print("Iniciando descarga de histórico de Bitcoin (Últimos 30 días)...")
@@ -41,7 +41,7 @@ def seed_historical_data():
         for kline in klines:
             doc = {
                 "asset": "Bitcoin",
-                "symbol": "BTC/USDT",
+                "symbol": "BTC/EUR",
                 "interval": "1h",
                 "open": float(kline[1]),
                 "high": float(kline[2]),

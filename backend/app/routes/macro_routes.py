@@ -68,7 +68,7 @@ def getBTCCandles():
         interval = request.args.get('interval', default='1h')
 
         cursor = collection_candles.find(
-            {"symbol": "BTCUSDT", "interval": interval}
+            {"symbol": "BTCEUR", "interval": interval}
         ).sort("timestamp_open", -1).limit(limit)
 
         raw_data = list(cursor)
@@ -108,7 +108,7 @@ def getBTCTicks():
         limit = request.args.get('limit', default=30, type=int)
         
         cursor = collection_ticks.find(
-            {"symbol": "BTCUSDT"}
+            {"symbol": "BTCEUR"}
         ).sort("timestamp", -1).limit(limit)
 
         raw_data = list(cursor)

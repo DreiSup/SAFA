@@ -96,9 +96,9 @@ def init_scheduler():
     scheduler = BackgroundScheduler()
 
     #anteriormente eliminadas las velas de 1m, se utiliza prices_ticks
-    scheduler.add_job(fetch_and_store_btc_candle, "cron", second=1, args=["BTCUSDT", "1m", "Bitcoin"])
-    scheduler.add_job(fetch_and_store_btc_candle, "cron", minute=1, args=["BTCUSDT", "1h", "Bitcoin"])
-    scheduler.add_job(fetch_and_store_btc_candle, "cron", hour=0, minute=1, args=["BTCUSDT", "1d", "Bitcoin"])
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", second=1, args=["BTCEUR", "1m", "Bitcoin"])
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", minute=1, args=["BTCEUR", "1h", "Bitcoin"])
+    scheduler.add_job(fetch_and_store_btc_candle, "cron", hour=0, minute=1, args=["BTCEUR", "1d", "Bitcoin"])
 
     scheduler.add_job(fetch_and_store_sp500_candle, "cron",  second=1, args=["SPY", "1m", "SP500"])
     scheduler.add_job(fetch_and_store_sp500_candle, "cron",  minute=1, args=["SPY", "1h", "SP500"])

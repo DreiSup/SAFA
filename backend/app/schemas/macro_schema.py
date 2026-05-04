@@ -7,7 +7,7 @@ class BitcoinPriceSchema(Schema):
     """
     # Excluimos el _id de Mongo porque a React no le importa y a Python le da error al serializarlo
     asset = fields.Str(dump_default="Bitcoin", metadata={"description": "Nombre del activo"})
-    symbol = fields.Str(dump_default="BTC/USDT", metadata={"description": "Par de trading"})
+    symbol = fields.Str(dump_default="BTC/EUR", metadata={"description": "Par de trading"})
     price = fields.Float(required=True, metadata={"description": "Precio de cierre"})
     timestamp = fields.Float(required=True, metadata={"description": "Marca de tiempo en segundos (Unix)"})
     source = fields.Str(metadata={"description": "Origen de los datos (ej. Binance Historical)"})

@@ -24,9 +24,9 @@ INTERVAL_TO_ALPACA = {"1m": "1Min", "1h": "1Hour", "1d": "1Day"}
 INTERVAL_DURATION = {"1m": 60, "1h": 3600, "1d": 86400}
 
 JOBS = [
-    {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1m", "limit": 1440},  # últimas ~16h
-    {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1h", "limit": 720},   # última semana
-    {"api": "binance", "symbol": "BTCUSDT", "asset": "Bitcoin", "interval": "1d", "limit": 365},    # último mes
+    {"api": "binance", "symbol": "BTCEUR", "asset": "Bitcoin", "interval": "1m", "limit": 1440},  # últimas ~16h
+    {"api": "binance", "symbol": "BTCEUR", "asset": "Bitcoin", "interval": "1h", "limit": 720},   # última semana
+    {"api": "binance", "symbol": "BTCEUR", "asset": "Bitcoin", "interval": "1d", "limit": 365},    # último mes
     {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1m", "limit": 1440},   # último día de mercado (~6.5h)
     {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1h", "limit": 720},   # ~1 mes de horas de mercado
     {"api": "alpaca",  "symbol": "SPY",     "asset": "SP500",   "interval": "1d", "limit": 365},    # último mes
