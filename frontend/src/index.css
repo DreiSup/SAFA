@@ -75,3 +75,24 @@
   }
 }
 
+/* SAFA design tokens */                                                       
+  :root {                                               
+    --s-bg:           #0A0A0A;                                                   
+    --s-bg-1:         #111111;
+    --s-bg-2:         #161616;                                                   
+    --s-bg-3:         #1C1C1C;                                                   
+    --s-border:       #1F1F1F;
+    --s-border-strong:#2A2A2A;                                                   
+                                                                                 
+    --s-fg:           #F5F5F4;                                                   
+    --s-fg-1:         #D4D4D1;                                                   
+    --s-fg-2:         #8A8A85;                                                   
+    --s-fg-3:         #525250;                                                   
+  
+    --s-accent:       oklch(0.78 0.13 75);                                       
+    --s-accent-dim:   oklch(0.78 0.13 75 / 0.14);       
+    --s-accent-fg:    #0A0A0A;                                                   
+                                                                                 
+    --s-pos:          oklch(0.76 0.16 148);                                      
+    --s-neg:          oklch(0.66 0.20 25);                                       
+  }                            
