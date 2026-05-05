@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
+import type { CandleListResponse } from '@/services/financeService'
+import type { OHLCVData } from '@/types/markets'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart'
-import type { CandleListResponse } from '@/services/financeService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import {
   Select,
@@ -19,6 +20,7 @@ interface AssetChartProps {
   socketEvent: string,
   fetchCandles: (limit: number, interval: string) => Promise<CandleListResponse>,
   volumeLabel?: string
+  onDataLoad?: (data: OHLCVData) => void
 }
 
 interface ChartPoint {
@@ -35,7 +37,7 @@ const PERIODS = {
   "1Y": {interval: "1d", limit: 365, timerMs: 86400000}
 }
 
-const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabel} : AssetChartProps) => {
+const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabel, onDataLoad} : AssetChartProps) => {
 
   const [data, setData] = useState<ChartPoint[]>([])
   const [actualPrice, setActualPrice] = useState(0)
@@ -95,6 +97,13 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
             setLow(Math.min(...candles.map(c => c.low)))
             setVolume(candles[candles.length - 1].volume ?? 0)
             lastTimestamp.current = candles[candles.length - 1].timestamp_open
+            onDataLoad?.({
+              open:   candles[0].open,                                                     
+              high:   Math.max(...candles.map(c => c.high)),                               
+              low:    Math.min(...candles.map(c => c.low)),                                
+              close:  candles[candles.length - 1].close,          
+              volume: candles[candles.length - 1].volume ?? 0, 
+            })
           }
       }
       catch (err) {
@@ -102,7 +111,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
       }
     }
     loadData()
-  }, [activePeriod, fetchCandles])
+  }, [activePeriod, fetchCandles, onDataLoad])
 
   //websocket
   useEffect(() => {
@@ -111,6 +120,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
     socket.on("connect", () => setIsLive(true))
     socket.on("disconnect", () => setIsLive(false))
     socket.on(socketEvent, (d) => setActualPrice(d.price))
+    console.log(actualPrice)
     return () => {
       socket.disconnect()
     }
@@ -173,12 +183,12 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
       <CardHeader>
         <div className="grid flex-1 gap-1">
           <CardDescription>
-            BTC - EUR
+            {ticker}
           </CardDescription>
-          <CardTitle className='text-4xl'>66.789€</CardTitle>
+          <CardTitle className='text-4xl'>{actualPrice.toLocaleString('es-ES')}€</CardTitle>
         </div>
 
-        <Select value={activePeriod} onValueChange={setActivePeriod}>
+        <Select value={activePeriod} onValueChange={(v) => setActivePeriod(v as keyof typeof PERIODS)}>
           <SelectTrigger
             className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
             aria-label="Select a value"

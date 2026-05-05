@@ -4,18 +4,28 @@ import React from 'react'
 
 const Test = () => {
 
-    const assetPrompts = {
+    const SP500Prompts = {
+        name: "SP500",
+        ticker: "SPY",
+        accent: "#f7931a", 
+        socketEvent:"update_sp500" ,
+        fetchCandles: (limit: number, interval: string) => financeService.getSP500Candles(limit, interval),
+        volumeLabel: "SP500"
+    }
+
+    const BTCPrompts = {
         name: "Bitcoin",
-        ticker: "BTC",
+        ticker: "BTCEUR",
         accent: "#f7931a", 
         socketEvent:"update_btc" ,
-        fetchCandles: (limit: number) => financeService.getBitcoinCandles(limit, "1h"),
+        fetchCandles: (limit: number, interval: string) => financeService.getBitcoinCandles(limit, interval),
         volumeLabel: "BTC"
     }
   return (
     <>
         <h1>Test</h1>
-        <AssetChart {...assetPrompts}/>
+        <AssetChart {...SP500Prompts}/>
+        <AssetChart {...BTCPrompts}/>
     </>
   )
 }

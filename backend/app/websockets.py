@@ -1,7 +1,7 @@
 import json
 from confluent_kafka import Consumer, KafkaError
 from .extensions import socketio
-from .schemas.macro_schema import price_tick_schema
+from .schemas.macro_schema import PriceTickSchema
 from .repositories.mongo_repository import insert_one, ensure_ttl_index
 from .utils.logger_setup import get_logger
 from datetime import datetime, timezone
@@ -40,11 +40,11 @@ def emit_real_time_price(topic, event_name):
             
             try: 
                 data_json = json.loads(msg.value().decode('utf-8'))
-                dato_validado = price_tick_schema.dump(data_json)
+                dato_validado = PriceTickSchema().dump(data_json)
                 socketio.emit(event_name, dato_validado)
                 dato_validado['created_at'] = datetime.now(timezone.utc)
                 insert_one(COLLECTION_TICKS, dato_validado)
-                """ logger.info(f"[{event_name}] Precio emitido: {data_json['price']}") """
+                logger.info(f"[{event_name}] Precio emitido: {dato_validado}")
 
             except Exception as e:
                 logger.error(f"Error procesando mensaje [{topic}]: {e}")
