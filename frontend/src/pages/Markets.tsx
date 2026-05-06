@@ -23,8 +23,7 @@ import { useState, useCallback } from 'react'
         <div className="flex items-center justify-between">                      
           <h1 className="text-2xl font-bold text-white">Mercados</h1>
                                                                                  
-          <div className="flex gap-2 rounded-lg border border-zinc-800           
-  bg-zinc-900 p-1">                                                              
+          <div className="flex gap-2 rounded-lg border border-zinc-800 bg-zinc-900 p-1">                                                              
             {ASSETS.map((asset) => (                                             
               <Button                                   
                 key={asset.id}

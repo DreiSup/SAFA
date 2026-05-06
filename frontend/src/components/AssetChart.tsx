@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { io } from 'socket.io-client'
 import type { CandleListResponse } from '@/services/financeService'
 import type { OHLCVData } from '@/types/markets'
@@ -25,7 +25,8 @@ interface AssetChartProps {
 
 interface ChartPoint {
   time: string,
-  price: number
+  price: number,
+  timestamp: number
 }
 
 type ViewMode = 'gradient' | 'linear'
@@ -48,6 +49,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
   const [isLive, setIsLive] = useState(false)
   const [activePeriod, setActivePeriod] = useState<keyof typeof PERIODS>('1D')
   const [viewMode, setViewMode] = useState<ViewMode>('gradient')
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const change = actualPrice - initialPrice
   const changePct = initialPrice > 0 ? (change / initialPrice) * 100 : 0
@@ -86,9 +88,10 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
                 time = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
               }
 
-              return { time, price: candle.close}
+              return { time, price: candle.close, timestamp: candle.timestamp_open * 1000 }
             })
             console.log(chartData)
+            setIsAnimating(true)
             setData(chartData)
             setInitialPrice(chartData[0].price)
             setActualPrice(chartData[chartData.length - 1].price)
@@ -104,6 +107,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
               close:  candles[candles.length - 1].close,          
               volume: candles[candles.length - 1].volume ?? 0, 
             })
+            setTimeout(() => setIsAnimating(false), 1500)
           }
       }
       catch (err) {
@@ -156,7 +160,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
         time = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
       }                                                                                                            
                   
-      setData(prev => [...prev.slice(1), { time, price: newCandle.close }])                                        
+      setData(prev => [...prev.slice(1), { time, price: newCandle.close, timestamp: newCandle.timestamp_open * 1000 }])                                        
     }
                                                                                                                    
     const msUntilBoundary = timerMs - (Date.now() % timerMs) + 2000
@@ -170,6 +174,48 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
       clearInterval(intervalId)
     }
   }, [activePeriod, fetchCandles])
+
+  const formatYTick = (v: number) => {
+    if (v >= 1000) {
+      const k = v / 1000
+      return `${Number.isInteger(k) ? k : k.toFixed(1)}k`
+    }
+    return v >= 10 ? Math.round(v).toString() : v.toFixed(1)
+  }
+
+  const xTicks = useMemo(() => {
+    if (data.length === 0) return []
+
+    if (activePeriod === '1D') {
+      return data
+        .filter(p => p.timestamp % 3600000 === 0)
+        .map(p => p.time)
+    }
+
+    if (activePeriod === '1W') {
+      return data.filter(p => !p.time.includes(':')).map(p => p.time)
+    }
+
+    if (activePeriod === '1M') {
+      const dayTicks = data.filter(p => !p.time.includes(':'))
+      return dayTicks.filter((_, i) => i % 7 === 0).map(p => p.time)
+    }
+
+    if (activePeriod === '1Y') {
+      const seen = new Set<string>()
+      return data
+        .filter(p => {
+          const d = new Date(p.timestamp)
+          const key = `${d.getFullYear()}-${d.getMonth()}`
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        .map(p => p.time)
+    }
+
+    return []
+  }, [data, activePeriod])
 
   const chartConfig = {
     price: {
@@ -185,7 +231,7 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
           <CardDescription>
             {ticker}
           </CardDescription>
-          <CardTitle className='text-4xl'>{actualPrice.toLocaleString('es-ES')}€</CardTitle>
+          <CardTitle className='text-4xl'>€ {actualPrice.toLocaleString('es-ES')}</CardTitle>
         </div>
 
         <Select value={activePeriod} onValueChange={(v) => setActivePeriod(v as keyof typeof PERIODS)}>
@@ -215,11 +261,58 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart data={data}>
-          <CartesianGrid/>
-          <XAxis dataKey="time" interval={Math.floor(data.length / 6)} />
-          <YAxis domain={['auto', 'auto']} />
-          <ChartTooltip />
-          <Area dataKey="price" />
+          <defs>
+            <linearGradient id={ticker} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={accent} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={accent} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+          <XAxis
+            dataKey="time"
+            ticks={xTicks}
+            tick={{ fill: "#71717a", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            domain={['auto', 'auto']}
+            tickFormatter={formatYTick}
+            tickCount={5}
+            tick={{ fill: "#71717a", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            width={48}
+          />
+          <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(_value, payload) => {
+                    const ts = payload?.[0]?.payload?.timestamp
+                    if (!ts) return _value
+                    const d = new Date(ts)
+                    if (activePeriod === '1Y') {
+                      return d.toLocaleString('es-ES', {day: 'numeric', month: 'short'})
+                    }
+                    return d.toLocaleString('es-ES', {
+                      day: 'numeric', month: 'short',
+                      hour: '2-digit', minute: '2-digit'
+                    })
+                  }}
+                indicator="dot"
+                />
+              }
+            />
+          <Area
+            type="monotone"
+            dataKey="price"
+            stroke={accent}
+            strokeWidth={2}
+            fill={`url(#${ticker})`}
+            dot={false}
+            isAnimationActive={isAnimating}
+          />
           </AreaChart>
         </ChartContainer>
       </CardContent>
@@ -228,3 +321,4 @@ const AssetChart = ({name, ticker, accent, socketEvent, fetchCandles, volumeLabe
 }
 
 export default AssetChart
+
