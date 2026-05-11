@@ -1,7 +1,7 @@
 import { useState } from 'react'                                               
-  import { Link, useLocation } from 'react-router-dom'
-  import { Home, Activity, TrendingUp, BarChart2, Columns2, User, ChevronLeft,   
-  ChevronRight } from 'lucide-react'                                             
+import { Link, useLocation } from 'react-router-dom'
+import { Home, Activity, TrendingUp, BarChart2, Columns2, User, ChevronLeft, ChevronRight, Pause, Play, AudioLines } from 'lucide-react'       
+import { useAudio } from '@/context/AudioContext'                              
    
   const NAV = [                                                                  
     { id: 'home', label: 'Inicio', icon: Home, to: '/', enabled: true  },                                                              
@@ -36,7 +36,11 @@ import { useState } from 'react'
     const isActive = (to: string | null) => {
       if (!to) return false
       return to === '/' ? pathname === '/' : pathname.startsWith(to)
-    }                                                                            
+    }    
+    
+    //Audio
+    const { isPlaying, togglePlay, currentTime, duration } = useAudio()
+    const progress = duration ? (currentTime / duration) * 100 : 0
    
     return (
       <aside style={{                                   
@@ -121,25 +125,49 @@ import { useState } from 'react'
         </nav>                                                                   
   
         {/* Audio mini-player placeholder */}                                    
-        {expanded && (  
-            <Link key={REPORT.id} to={REPORT.to} style={{ textDecoration: 'none' }}>
-            <div 
-                style={{ margin: '10px 12px', padding: 12, background: 'var(--s-bg-1)', border: '1px solid var(--s-border)', borderRadius: 10 }}
+        {expanded ? (  
+          <div className={`mx-3 my-[10px] p-3 bg-s-bg-1 rounded-[10px] transition-all duration-500 ${isPlaying ? 'ring-2 ring-s-accent' : ''}`}
                 >     
-                <div 
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}
-                    >                                           
-                <span style={{ fontSize: 10, color: 'var(--s-accent)', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
-                >
-                    {REPORT.label} · Hoy
-                </span>                                                                
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--s-accent)' }} />                                                     
-                </div>
-                <p style={{ fontSize: 12, color: 'var(--s-fg-2)', lineHeight: 1.3 }}>
-                    Disponible próximamente
-                </p>                                               
+                <Link key={REPORT.id} to={REPORT.to} style={{ textDecoration: 'none' }}>
+                  <div 
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}
+                      >                                           
+                  <span style={{ fontSize: 10, color: 'var(--s-accent)', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}
+                  >
+                      {REPORT.label} · Hoy
+                  </span>                                                                
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--s-accent)' }} />                                                     
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--s-fg-2)', lineHeight: 1.3 }}>
+                      Sinapsis del resumen de hoy generado con la IA
+                  </p>
+                </Link>                                                       
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop:8 }}>
+                  <button
+                    onClick={(e) => {e.stopPropagation(); togglePlay()}}
+                    className=" w-8 h-8 rounded-full bg-s-accent flex items-center justify-center"
+                  >
+                    {isPlaying
+                        ? <Pause size={13} className="text-s-accent-fg" />
+                        : <Play  size={13} className="text-s-accent-fg fill-s-accent-fg" />
+                    }
+                  </button>                                            
+                  <div style={{ flex: 1, height: 3, background: 'var(--s-bg-3)', 
+                borderRadius: 99 }}>
+                    <div style={{ height: '100%', width: `${progress}%`, background: 
+                'var(--s-accent)', borderRadius: 99 }} />
+                  </div>
+                </div> 
             </div>
-            </Link>                                                       
+        ) : (
+          <div className={`mx-3 my-[10px] p-1 bg-s-bg-1 rounded-[10px] `}>
+            <button
+              onClick={(e) => {e.stopPropagation(); togglePlay()}}
+              className={`w-8 h-8 rounded-full bg-s-bg-3 flex items-center justify-center transition-all duration-500 ${isPlaying ? 'ring-2 ring-s-accent' : ''}`}
+            >
+              <AudioLines size={13} className="text-s-accent" />
+            </button> 
+          </div>
         )}                                                                       
                                                                                
         {/* User chip */}                                                        

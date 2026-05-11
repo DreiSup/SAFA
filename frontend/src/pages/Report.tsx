@@ -1,9 +1,9 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Pause, Play } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useAudio } from '@/context/AudioContext'
 
 
 
@@ -65,62 +65,20 @@ const BARS = Array.from({ length: 80 }, (_, i) => {
 
 
 const Report = () => {
+    
+    const { currentTime, duration, isPlaying, togglePlay, seek} = useAudio()
 
-    const audioRef = useRef<HTMLAudioElement>(null)
-
-    const [currentTime, setCurrentTime] = useState(0)
-    const [duration, setDuration] = useState(0)
-    const [isPlaying, setIsPlaying] = useState(false) 
-
-    useEffect(() => {
-          const audio = audioRef.current
-          if (!audio) return
-
-          const onTimeUpdate = () => setCurrentTime(audio.currentTime)
-          const onLoadMetadata = () => setDuration(audio.duration)
-          const onEnded = () => setIsPlaying(false)
-
-          audio.addEventListener('timeupdate', onTimeUpdate)
-          audio.addEventListener('loadedmetadata', onLoadMetadata)
-          audio.addEventListener('ended', onEnded)
-        
-          return () => {
-            audio.removeEventListener('timeupdate', onTimeUpdate)
-            audio.removeEventListener('loadedmetadata', onLoadMetadata)
-            audio.removeEventListener('ended', onEnded)
-          }
-        }, [])
-        
     const hoy = new Date().toLocaleDateString('es-ES', {
         weekday: 'long',
         day: 'numeric',
         month: 'long'
     })
 
-    const togglePlay = () => {
-        const audio = audioRef.current
-        if (!audio) return
-        if (isPlaying) {
-            audio.pause()
-        } else {
-            audio.play()
-        }
-        setIsPlaying(p => !p)
-    }
-
-    const seek = (val: number) => {
-        const audio = audioRef.current
-        if (!audio) return
-        if (duration === 0) return
-        audio.currentTime = (val/100)*duration
-    }
-
     const progress = duration ? (currentTime / duration) * 100 : 0
     
     return (
-<>
-        <audio ref={audioRef} src="/reporte.mp3" preload='metadata'></audio>
-        <div className="min-h-screen bg-s-bg p-6 flex flex-col gap-6">
+
+    <div className="min-h-screen bg-s-bg p-6 flex flex-col gap-6">
         <div className='flex flex-col'>
             <p className='text-[11px] uppercase tracking-widest text-s-fg-3 pb-4'>Reporte de audio</p>
             <h2 className='text-[22px] font-medium tracking-tight text-s-fg'>
@@ -190,7 +148,7 @@ const Report = () => {
             </Card>
         </div>
     </div>
-</>
+
   )
 }
 

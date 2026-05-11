@@ -11,15 +11,19 @@ import Test from './pages/Test';
 import UserHome from './pages/UserHome';
 import Markets from './pages/Markets';
 import Report from './pages/Report';
+import { AudioProvider } from './context/AudioContext';
+import Colors from './pages/Colors';
 
 function AppLayout() {
   return(
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--s-bg)', overflow: 'hidden' }}>
-      <Sidebar />
-      <main className='flex-1 flex flex-col min-w-0 dark overflow-y-auto'>
-        <Outlet />
-      </main>
-    </div>
+    <AudioProvider>
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--s-bg)', overflow: 'hidden' }}>
+        <Sidebar />
+        <main className='flex-1 flex flex-col min-w-0 dark overflow-y-auto'>
+          <Outlet />
+        </main>
+      </div>
+    </AudioProvider>
   )
 }
 
@@ -38,6 +42,7 @@ function App() {
             <Route path='/markets' element={<Markets/>}/>
             <Route path='/report' element={<Report/>}/>
 
+            <Route path='/colors' element={<Colors/>}/>
           </Route>
 
           <Route path='/*' element={<NotFound/>}/>
