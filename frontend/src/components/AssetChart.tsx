@@ -32,7 +32,7 @@ interface ChartPoint {
 type ViewMode = 'gradient' | 'linear'
 
 const PERIODS = {
-  "1D": {interval: "1m", limit: 480, timerMs: 60000},
+  "1D": {interval: "1m", limit: 1440, timerMs: 60000},
   "1W": {interval: "1h", limit: 168, timerMs: 3600000},
   "1M": {interval: "1h", limit: 720, timerMs: 3600000},
   "1Y": {interval: "1d", limit: 365, timerMs: 86400000}

@@ -57,8 +57,8 @@ safa/
 │       │   ├── macro_schema.py
 │       │   └── consumer_spark.py
 │       ├── scripts/
-│       │   ├── seed crypto/
-│       │   ├── seed sp500/
+│       │   ├── seed_candles.py        — seed histórico BTC+SP500 (1m/1h/1d)
+│       │   ├── candle_scheduler.py    — APScheduler: actualiza velas cada minuto/hora/día
 │       │   └── download_finbert/
 │       ├── services/
 │       │   ├── crypto/
@@ -106,6 +106,8 @@ safa/
 - Frontend micro casi terminado
 - Gráficas BTC y SP500 visibles en frontend (WebSockets conectados)
 - `producer_reddit.py` creado: fetchea posts de Reddit (wallstreetbets, Bitcoin, CryptoCurrency, investing), clasifica por target y publica en Kafka
+- `seed_candles.py` operativo: carga hasta 1440 velas de 1m, 720 de 1h y 365 de 1d para BTCEUR (Binance) y SPY (Alpaca)
+- `candle_scheduler.py` integrado en Flask vía APScheduler: actualiza BTCEUR cada minuto/hora/día; SPY igual pero con Alpaca
 
 ### 🔜 Próximo paso inmediato — separar flujos News y Reddit
 Actualmente Reddit publica en el mismo topic `news_ticker` y colección `sentiment_news` que NewsAPI.
@@ -121,7 +123,7 @@ Hay que separarlos para poder compararlos. El plan está diseñado: solo 2 archi
 - Autocategorización de noticias por Embeddings
 - Detección de anomalías en datos financieros
 - Anti-duplicados persistentes en DB (ahora son solo en RAM, se pierden al reiniciar)
-- **Charts BTC y SP500 no funcionan como deben**: solo hay datos de hace ~2 semanas en DB, necesitan ingesta continua casi en tiempo real. Las gráficas se ven pero no reflejan el estado actual del mercado.
+- **SP500 (Alpaca): fetch incompleto** — `fetch_alpaca_bars` en `seed_candles.py` no maneja paginación; Alpaca devuelve `next_page_token` cuando hay más velas de las que caben en una respuesta, por lo que la colección SPY puede tener menos velas de las esperadas. BTC (Binance) funciona correctamente.
 
 ### 🚀 Largo plazo
 - Pipeline RAG + LLM + TTS para generación del reporte de audio diario
@@ -135,6 +137,7 @@ Hay que separarlos para poder compararlos. El plan está diseñado: solo 2 archi
 | Anti-duplicados de NewsAPI en RAM | Se pierden al reiniciar el servicio | Media |
 | Checkpoints de Spark en `/tmp/` | No son persistentes entre reinicios | Media |
 | Retención de Kafka gestionada manualmente | Sin política automática de limpieza | Baja |
+| SP500 Alpaca sin paginación | `fetch_alpaca_bars` ignora `next_page_token`; SPY puede tener velas incompletas | Media |
 
 ---
 
@@ -146,9 +149,10 @@ docker-compose up -d          # Levanta Kafka + Zookeeper
 docker-compose down           # Para la infraestructura
 
 # Backend
-cd backend && python app.py   # Inicia el servidor Flask
-python -m app.services.producer_news    # Lanza el productor de noticias
-python -m app.schemas.consumer_spark    # Lanza el consumer de Spark + FinBERT
+cd backend && python app.py              # Inicia el servidor Flask (incluye candle_scheduler)
+python -m app.scripts.seed_candles       # Seed histórico BTC+SP500 (ejecutar una vez)
+python -m app.services.producer_news     # Lanza el productor de noticias
+python -m app.schemas.consumer_spark     # Lanza el consumer de Spark + FinBERT
 
 # Frontend
 cd frontend && npm run dev    # Inicia el frontend React en desarrollo

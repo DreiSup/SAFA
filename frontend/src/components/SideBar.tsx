@@ -5,7 +5,7 @@ import { useAudio } from '@/context/AudioContext'
    
   const NAV = [                                                                  
     { id: 'home', label: 'Inicio', icon: Home, to: '/', enabled: true  },                                                              
-    { id: 'micro', label: 'Micro', icon: Activity, to: '/home', enabled: true  },                                                              
+    { id: 'micro', label: 'Micro', icon: Activity, to: '/micro', enabled: true  },                                                              
     { id: 'macro', label: 'Macro', icon: TrendingUp, to: '/markets', enabled: true  },                                                              
     { id: 'chart',   label: 'Gráficas', icon: BarChart2,  to: '/chart', enabled: true  },                                                              
     { id: 'compare', label: 'Comparar', icon: Columns2,   to: null, enabled: false },                                                              

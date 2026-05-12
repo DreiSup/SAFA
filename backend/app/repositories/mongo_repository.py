@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from pymongo.errors import BulkWriteError, DuplicateKeyError
 from app.utils.logger_setup import get_logger 
+from datetime import datetime, timedelta, timezone
 
 load_dotenv()
 logger = get_logger(__name__)
@@ -37,7 +38,7 @@ def get_filtered(collection_name, field, filter, limit=None):
         logger.error(f"Something went wrong: {str(e)}")
 
 def get_sentiment_summary(collection_name, since_hours=24):
-    from datetime import datetime, timedelta, timezone
+    
 
     client = get_client()
     db = client[DB_NAME]

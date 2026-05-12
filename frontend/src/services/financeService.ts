@@ -50,6 +50,18 @@ export interface CandleListResponse {
     data: Candle[];
 }
 
+export interface SentimentData {
+    score: number
+    label: 'positive' | 'negative' | 'neutral'
+    n: number
+}
+
+export interface SentimentResponse {
+    status: string
+    since_hours: number
+    data: { bitcoin: SentimentData; sp500: SentimentData; general_macro: SentimentData}
+}
+
 export const financeService = {
 
     getDashboard: async (): Promise<DashboardData> => {
@@ -128,5 +140,12 @@ export const financeService = {
             console.error("Error en getSP500Candles:", error);
             throw error;
         }
+    },
+
+    getSentiment: async (sinceHours = 24): Promise<SentimentResponse> => {
+        const res = await apiClient.get(`v1/macro/sentiment?since=${sinceHours}`)
+        return res.data
     }
 }
+
+

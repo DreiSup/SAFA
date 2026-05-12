@@ -4,12 +4,21 @@ import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Pause, Play } from 'lucide-react'
 import { useAudio } from '@/context/AudioContext'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { useEffect, useState } from 'react'
+import { financeService } from '@/services/financeService'
 
-
-
-
-const BARS = Array.from({ length: 80 }, (_, i) => {                        
-    const pos = i / 79                        // 0.0 → 1.0                 
+const BARS = Array.from({ length: 180 }, (_, i) => {                        
+    const pos = i / 179                        // 0.0 → 1.0                 
     const envelope = Math.sin(pos * Math.PI)  // 0 → 1 → 0                   
     return 8 + envelope * (15 + Math.random() * 65)                          
   })
@@ -61,12 +70,73 @@ const BARS = Array.from({ length: 80 }, (_, i) => {
       y revisar la estructura de costos de infraestructura en busca de eficiencias adicionales.
       
       Esto concluye el reporte financiero del mes de abril de 2026. Gracias.
-      `
+      `   
 
+function DataPoint({ label, value, tone, sub }: { label: string, value: string, tone: 'pos' | 'neg' | 'accent', sub: string }) {
+    const valueColor =
+        tone === 'pos' ? 'var(--s-pos)' :
+        tone === 'neg' ? 'var(--s-neg)' :
+                         'var(--s-accent)'
+    return (
+        <div>
+            <div className='text-[10px] uppercase tracking-[0.16em] text-s-fg-3 mb-1.5'>{label}</div>
+            <div className='font-mono text-[22px] font-medium tracking-tight' style={{ color: valueColor }}>{value}</div>
+            <div className='font-mono text-[11px] text-s-fg-3 mt-0.5'>{sub}</div>
+        </div>
+    )
+}
 
 const Report = () => {
     
     const { currentTime, duration, isPlaying, togglePlay, seek} = useAudio()
+
+    const [btcChange, setBtcChange] = useState<string | null>(null)
+    const [btcPrice, setBtcPrice] = useState<string | null>(null)
+    const [sp500Change, setSp500Change] = useState<string | null>(null)
+    const [sp500Price, setSp500Price] = useState<string | null>(null)
+    const [sentimentLabel, setSentimentLabel] = useState<string | null>(null)
+    const [sentimentScore, setSentimentScore] = useState<string | null>(null)
+    const [sentimentTone,  setSentimentTone]  = useState<'pos'|'neg'|'accent'>('accent')
+
+    useEffect(() => {
+        const fetchMarketSummary = async () => {
+            try {
+                const [btcRes, spRes, sentRes] = await Promise.all([
+                    financeService.getBitcoinCandles(2, '1h'),
+                    financeService.getSP500Candles(2, '1h'),
+                    financeService.getSentiment(24),
+                ])
+
+                if (btcRes.status === 'success' && btcRes.data.length >= 2) {
+                    const [prev, last] = btcRes.data
+                    const pct = ((last.close - prev.close) / prev.close) * 100
+                    setBtcChange((pct >= 0 ? '+' : '') + pct.toFixed(2) + '%')
+                    setBtcPrice(last.close.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' EUR')
+                }
+
+                if (spRes.status === 'success' && spRes.data.length >= 2) {
+                    const [prev, last] = spRes.data
+                    const pct = ((last.close - prev.close) / prev.close) * 100
+                    setSp500Change((pct >= 0 ? '+' : '') + pct.toFixed(2) + '%')
+                    setSp500Price(last.close.toLocaleString('es-ES', { maximumFractionDigits: 2 }))
+                }
+
+                if (sentRes.status === 'success') {
+                    const btcSent = sentRes.data.bitcoin
+                    const labelMap = { positive: 'Optimista', negative: 'Pesimista', neutral: 'Neutral' }
+                    const toneMap:  Record<string, 'pos'|'neg'|'accent'> = { positive: 'accent', negative: 'neg', neutral: 'accent' }
+                    setSentimentLabel(labelMap[btcSent.label])
+                    setSentimentScore((btcSent.score >= 0 ? '+' : '') + btcSent.score.toFixed(2) + ' score')
+                    setSentimentTone(toneMap[btcSent.label])
+                }
+            } catch (err) {
+                console.error('Error cargando market summary', err)
+            }
+        }
+        fetchMarketSummary()
+    }, 
+    [])
+    
 
     const hoy = new Date().toLocaleDateString('es-ES', {
         weekday: 'long',
@@ -130,6 +200,12 @@ const Report = () => {
                         </button>
                         <span className="w-[40px]" />
                     </div>
+                </div>
+                <Separator />
+                <div className='grid grid-cols-3 gap-4'>
+                    <DataPoint label="BTC HOY"    value={btcChange ?? '—'} tone={btcChange?.startsWith('-') ? 'neg' : 'pos'} sub={btcPrice ?? '...'}   />
+                    <DataPoint label="S&P 500"     value={sp500Change ?? '—'} tone={sp500Change?.startsWith('-') ? 'neg' : 'pos'} sub={sp500Price ?? '...'}    />
+                    <DataPoint label="SENTIMIENTO" value={sentimentLabel ?? '—'} tone={sentimentTone} sub={sentimentScore ?? '...'} />
                 </div>
             </Card>
 

@@ -1,0 +1,135 @@
+/* SAFA design tokens */
+:root {
+  --bg: #0A0A0A;
+  --bg-1: #111111;
+  --bg-2: #161616;
+  --bg-3: #1C1C1C;
+  --border: #1F1F1F;
+  --border-strong: #2A2A2A;
+
+  --fg: #F5F5F4;
+  --fg-1: #D4D4D1;
+  --fg-2: #8A8A85;
+  --fg-3: #525250;
+
+  --accent: oklch(0.78 0.13 75);          /* amber/brass — SAFA */
+  --accent-dim: oklch(0.78 0.13 75 / 0.14);
+  --accent-fg: #0A0A0A;
+
+  --pos: oklch(0.76 0.16 148);
+  --pos-dim: oklch(0.76 0.16 148 / 0.14);
+  --neg: oklch(0.66 0.20 25);
+  --neg-dim: oklch(0.66 0.20 25 / 0.14);
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.pos { color: var(--pos); }
+.neg { color: var(--neg); }
+.muted { color: var(--fg-2); }
+.dim { color: var(--fg-3); }
+
+/* surfaces */
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.hairline { border-top: 1px solid var(--border); }
+
+/* buttons (shadcn-ish dark) */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-sans); font-weight: 500; font-size: 13px;
+  letter-spacing: -0.005em;
+  height: 36px; padding: 0 14px;
+  border-radius: 8px; border: 1px solid transparent;
+  cursor: pointer; transition: all 120ms ease;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--fg); color: #0A0A0A; }
+.btn-primary:hover { background: #fff; }
+.btn-accent { background: var(--accent); color: var(--accent-fg); }
+.btn-accent:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--fg); border-color: var(--border-strong); }
+.btn-ghost:hover { background: var(--bg-2); }
+.btn-link { background: transparent; color: var(--fg-2); height: auto; padding: 0; }
+.btn-link:hover { color: var(--fg); }
+
+.btn-lg { height: 44px; padding: 0 20px; font-size: 14px; }
+.btn-xl { height: 52px; padding: 0 26px; font-size: 15px; border-radius: 10px; }
+
+/* inputs */
+.input {
+  width: 100%;
+  height: 40px; padding: 0 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: var(--font-sans); font-size: 14px;
+  outline: none; transition: border-color 120ms ease;
+}
+.input:focus { border-color: var(--border-strong); }
+.input::placeholder { color: var(--fg-3); }
+.label { font-size: 12px; color: var(--fg-2); margin-bottom: 6px; display: block; letter-spacing: 0.01em; }
+
+/* badge */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 500;
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-2); color: var(--fg-1);
+  letter-spacing: 0.02em;
+}
+.badge-pos { background: var(--pos-dim); color: var(--pos); border-color: transparent; }
+.badge-neg { background: var(--neg-dim); color: var(--neg); border-color: transparent; }
+.badge-accent { background: var(--accent-dim); color: var(--accent); border-color: transparent; }
+
+/* live dot */
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pos);
+  box-shadow: 0 0 0 0 var(--pos);
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 oklch(0.76 0.16 148 / 0.55); }
+  70% { box-shadow: 0 0 0 6px oklch(0.76 0.16 148 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(0.76 0.16 148 / 0); }
+}
+
+/* tab pill row */
+.tabs { display: inline-flex; padding: 3px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; gap: 2px; }
+.tab { padding: 6px 12px; font-size: 12px; color: var(--fg-2); border-radius: 6px; cursor: pointer; user-select: none; }
+.tab.active { background: var(--bg-3); color: var(--fg); }
+
+/* divider line */
+.row-divider > * + * { border-top: 1px solid var(--border); }
+
+/* SAFA logo glyph: a small concentric circle marker */
+.safa-mark {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at center, var(--accent) 0 30%, transparent 31% 55%, var(--accent) 56% 70%, transparent 71%);
+  position: relative;
+}
+.safa-mark.sm { width: 14px; height: 14px; }
+.safa-mark.lg { width: 36px; height: 36px; }
