@@ -1,3 +1,4 @@
+import type { Report } from "@/data/mockReports";
 import apiClient from "./axiosClient"
 
 
@@ -61,6 +62,14 @@ export interface SentimentResponse {
     since_hours: number
     data: { bitcoin: SentimentData; sp500: SentimentData; general_macro: SentimentData}
 }
+
+interface ReportApiResponse {
+      id: string
+      date: string
+      label: string
+      text: string
+      audio_path: string
+    }
 
 export const financeService = {
 
@@ -145,6 +154,41 @@ export const financeService = {
     getSentiment: async (sinceHours = 24): Promise<SentimentResponse> => {
         const res = await apiClient.get(`v1/macro/sentiment?since=${sinceHours}`)
         return res.data
+    },
+
+    generateReport: async (): Promise<Report> => {
+        try{
+            const response = await api.post<ReportApiResponse>('/v1/report/generate')
+            const data = response.data
+            return {
+                id: data.id,
+                date: data.date,
+                label: data.label,
+                audioSrc: 'http://127.0.0.1:5000' + data.audio_path,
+                transcript: data.text,
+                listened: false
+            }
+        } catch (error) {
+            console.error('Error en generateReport:', error);
+            throw error
+        }
+    }, 
+
+    getReports: async (): Promise<Report[]> => {
+        try {
+            const response = await api.get<ReportApiResponse[]>('v1/report/list')
+            return response.data.map((r => ({
+                id: r.id,
+                date: r.date,
+                label: r.label,
+                audioSrc: 'http://127.0.0.1:5000' + r.audio_path,
+                transcript: r.text,
+                listened: false
+            })))
+        } catch (error) {
+            console.error("Error en getReports: ", error)
+            throw error
+        }
     }
 }
 

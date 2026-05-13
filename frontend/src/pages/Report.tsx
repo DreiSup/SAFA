@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { useEffect, useState } from 'react'
 import { financeService } from '@/services/financeService'
+import { Button } from '@/components/ui/button'
 
 const BARS = Array.from({ length: 180 }, (_, i) => {                        
     const pos = i / 179                        // 0.0 → 1.0                 
@@ -223,6 +224,7 @@ const Report = () => {
                 </ScrollArea>
             </Card>
         </div>
+        <Button variant="secondary" className='w-60 mt-5'>Generar reporte</Button>
     </div>
 
   )
